@@ -17,6 +17,11 @@ Rectangle {
     property string label: ""
     property int labelSize: 15
     readonly property bool hasText: glyph !== "" || label !== ""
+    // Draw a filled rounded square behind the glyph/label, so a text mark
+    // reads like a small logo tile (the old ML4W mark's shape).
+    property bool badge: false
+    property int badgeSize: 18
+    property real badgeRadius: 5
     // Set by the keyboard navigation in StatusbarWindow to highlight the
     // currently selected module.
     property bool focused: false
@@ -40,6 +45,15 @@ Rectangle {
     // Fade the accent circle in on hover/selection and out again on leave.
     Behavior on color {
         ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
+    }
+
+    Rectangle {
+        anchors.centerIn: parent
+        visible: btn.badge
+        width: btn.badgeSize
+        height: btn.badgeSize
+        radius: btn.badgeRadius
+        color: Theme.primary
     }
 
     Image {
@@ -67,7 +81,7 @@ Rectangle {
         anchors.centerIn: parent
         visible: btn.hasText
         text: btn.glyph !== "" ? btn.glyph : btn.label
-        color: btn.active ? Theme.background : Theme.primary
+        color: btn.badge ? Theme.background : (btn.active ? Theme.background : Theme.primary)
         font.family: btn.glyph !== "" ? Theme.iconFontFamily : Theme.fontFamily
         font.pixelSize: btn.glyph !== "" ? btn.glyphSize : btn.labelSize
         font.bold: btn.label !== ""
