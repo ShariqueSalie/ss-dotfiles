@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import qs.CustomTheme
 
 // The update badge in the status bar: the dwm-s Update Center icon plus the
@@ -34,10 +35,8 @@ Rectangle {
     implicitHeight: 30
     radius: 15
 
-    // The icon is a white glyph, so a translucent accent works as the hover
-    // background where the other modules fill with solid `primary`.
-    color: active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.18)
-                  : "transparent"
+    // Same accent-filled circle as the other bar buttons on hover/selection.
+    color: active ? Theme.primary : "transparent"
 
     Behavior on color {
         ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
@@ -49,7 +48,8 @@ Rectangle {
         spacing: 4
 
         // The Update Center icon from dwm-s, kept as-is so it stays
-        // recognisable (the other bar icons are tinted to the theme).
+        // recognisable. On hover it is tinted dark to stay legible on the
+        // solid accent circle, like the theme-coloured bar icons.
         Image {
             Layout.alignment: Qt.AlignVCenter
             source: "assets/update-center/dwm-update-center.png"
@@ -59,16 +59,29 @@ Rectangle {
             height: 18
             fillMode: Image.PreserveAspectFit
             smooth: true
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                colorization: updates.active ? 1.0 : 0.0
+                colorizationColor: Theme.background
+
+                Behavior on colorization {
+                    NumberAnimation { duration: 500; easing.type: Easing.OutQuint }
+                }
+            }
         }
 
         Text {
             Layout.alignment: Qt.AlignVCenter
             visible: updates.count > 0
             text: updates.count > 99 ? "99+" : updates.count
-            color: Theme.primary
+            color: updates.active ? Theme.background : Theme.primary
             font.family: Theme.fontFamily
             font.pixelSize: 14
             font.bold: true
+
+            Behavior on color {
+                ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
+            }
         }
     }
 
