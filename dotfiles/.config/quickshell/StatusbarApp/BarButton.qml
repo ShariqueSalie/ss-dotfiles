@@ -12,6 +12,11 @@ Rectangle {
     // Meslo Nerd Font (Fira Sans has no glyph for it).
     property string glyph: ""
     property int glyphSize: 20
+    // Optional short wordmark shown instead of `iconSrc` (e.g. "ss." in place
+    // of the ML4W mark), drawn in the bar's normal text font.
+    property string label: ""
+    property int labelSize: 15
+    readonly property bool hasText: glyph !== "" || label !== ""
     // Set by the keyboard navigation in StatusbarWindow to highlight the
     // currently selected module.
     property bool focused: false
@@ -39,7 +44,7 @@ Rectangle {
 
     Image {
         anchors.centerIn: parent
-        visible: btn.glyph === ""
+        visible: !btn.hasText
         source: btn.iconSrc
         width: 18
         height: 18
@@ -60,11 +65,12 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        visible: btn.glyph !== ""
-        text: btn.glyph
+        visible: btn.hasText
+        text: btn.glyph !== "" ? btn.glyph : btn.label
         color: btn.active ? Theme.background : Theme.primary
-        font.family: Theme.iconFontFamily
-        font.pixelSize: btn.glyphSize
+        font.family: btn.glyph !== "" ? Theme.iconFontFamily : Theme.fontFamily
+        font.pixelSize: btn.glyph !== "" ? btn.glyphSize : btn.labelSize
+        font.bold: btn.label !== ""
 
         Behavior on color {
             ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
