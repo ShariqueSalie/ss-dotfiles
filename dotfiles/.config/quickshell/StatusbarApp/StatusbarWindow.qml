@@ -33,8 +33,10 @@ PanelWindow {
     HyprlandFocusGrab {
         windows: [root]
         active: root.barExpanded || root.calendarOpen || root.audioMenuOpen
+            || root.updateCenterOpen
         onCleared: {
             root.calendarOpen = false
+            root.updateCenterOpen = false
             if (root.volumeRef)
                 root.volumeRef.closeOutputMenu()
             root.barExpanded = false
@@ -47,10 +49,12 @@ PanelWindow {
     // takes precedence over collapsing the bar (see keyHandler below).
     Shortcut {
         sequence: "Escape"
-        enabled: root.calendarOpen || root.audioMenuOpen
+        enabled: root.calendarOpen || root.audioMenuOpen || root.updateCenterOpen
         onActivated: {
             if (root.audioMenuOpen)
                 root.volumeRef.closeOutputMenu()
+            else if (root.updateCenterOpen)
+                root.updateCenterOpen = false
             else
                 root.calendarOpen = false
         }
@@ -316,6 +320,7 @@ PanelWindow {
     // open (the tray lives in the right area, which the reveal keeps on screen).
     readonly property bool revealed: !autohide || root.pointerHeld
         || root.barExpanded || root.trayMenuOpen || root.calendarOpen
+        || root.updateCenterOpen
 
     // The pointer's hover, held for bar.hideDelay ms after it leaves. Without the
     // grace period the bar snaps shut on every momentary gap in the hover:
@@ -487,12 +492,114 @@ PanelWindow {
             }
         }
     }
+    // --- UPDATE CENTER ---
+    // The dwm-s Update Center, carried into this bar: one card listing what
+    // each provider has pending. The backend script
+    // (~/.config/ml4w/scripts/ml4w-update-center) checks the package manager,
+    // Flatpak and the dotfiles' GitHub branch. It caches its snapshot, so
+    // opening the card repeatedly does not re-run a full scan.
+    //
+    // updatesRef is the placed bar module, tracked so the card can hang under
+    // its icon.
+    property var updatesRef: null
+    property bool updateCenterOpen: false
+    property var updateCenterProviders: []
+    property int updateCenterCount: 0
+    property int updateCenterGitHub: 0
+    property bool updateCenterScanning: false
+    property string updateCenterError: ""
+    property double updateCenterChecked: 0
+    readonly property string updateCenterScript:
+        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-update-center"
+
+    function acceptUpdateCenter(text): void {
+        try {
+            let data = JSON.parse(text)
+            let providers = Array.isArray(data.providers) ? data.providers : []
+            let total = 0
+            let github = 0
+            for (let i = 0; i < providers.length; i++) {
+                let count = Number(providers[i].count) || 0
+                total += count
+                if (providers[i].id === "dotfiles")
+                    github = count
+            }
+            root.updateCenterProviders = providers
+            root.updateCenterCount = total
+            root.updateCenterGitHub = github
+            root.updateCenterChecked = Number(data.checked) || 0
+            root.updateCenterError = ""
+        } catch (e) {
+            root.updateCenterError = "Could not read the update snapshot"
+        }
+    }
+
+    function refreshUpdateCenter(force): void {
+        if (updateCenterProc.running)
+            return
+        let command = [root.updateCenterScript, "snapshot"]
+        if (force)
+            command.push("--force")
+        updateCenterProc.command = command
+        updateCenterProc.running = true
+        root.updateCenterScanning = true
+    }
+
+    function toggleUpdateCenter(): void {
+        root.updateCenterOpen = !root.updateCenterOpen
+        if (!root.updateCenterOpen)
+            return
+        // Re-check when the cached snapshot has gone stale, but do not run a
+        // full package scan every time the card is opened.
+        if (Date.now() / 1000 - root.updateCenterChecked > 300)
+            root.refreshUpdateCenter(false)
+    }
+
+    function runUpdateAction(identifier): void {
+        Quickshell.execDetached([root.updateCenterScript, "update", identifier])
+    }
+
+    Process {
+        id: updateCenterProc
+        command: ["true"]
+        running: false
+        stdout: StdioCollector { id: updateCenterOutput }
+        stderr: StdioCollector { id: updateCenterStderr }
+        onExited: (exitCode, exitStatus) => { // qmllint disable signal-handler-parameters
+            if (exitStatus === 0 && exitCode === 0)
+                root.acceptUpdateCenter(updateCenterOutput.text)
+            else {
+                let message = updateCenterStderr.text.trim().replace(/\s+/g, " ")
+                root.updateCenterError = message.length > 0
+                    ? message.slice(0, 200) : "The update check failed"
+            }
+            root.updateCenterScanning = false
+        }
+    }
+
+    // Same 30 minute cadence as the module this replaces, so a commit pushed
+    // to the dotfiles' GitHub branch shows up without opening the card.
+    Timer {
+        interval: 1800 * 1000
+        running: true
+        repeat: true
+        onTriggered: root.refreshUpdateCenter(false)
+    }
+
     Component {
         id: cUpdates
-        UpdatesModule {
-            // Rebuild the keyboard navigation list when the module hides or
-            // reappears (its collapsed state tracks the available update count).
-            onCollapsedChanged: Qt.callLater(root.rebuildNavItems)
+        UpdateCenterModule {
+            id: updateCenterModule
+            count: root.updateCenterCount
+            onActivateRequested: root.toggleUpdateCenter()
+            Component.onCompleted: {
+                root.updatesRef = updateCenterModule
+                Qt.callLater(root.rebuildNavItems)
+            }
+            Component.onDestruction: {
+                if (root.updatesRef === updateCenterModule)
+                    root.updatesRef = null
+            }
         }
     }
     Component {
@@ -565,7 +672,10 @@ PanelWindow {
         root.navItems = items
     }
 
-    Component.onCompleted: Qt.callLater(rebuildNavItems)
+    Component.onCompleted: {
+        Qt.callLater(rebuildNavItems)
+        root.refreshUpdateCenter(false)
+    }
     onSettingsChanged: Qt.callLater(rebuildNavItems)
 
     // Highlight exactly the item at focusIndex and clear all others. Called
@@ -675,6 +785,21 @@ PanelWindow {
         function reload(): void { root.reloadSettings() }
     }
 
+    // The Update Center card, and the module that opens it. `refresh` rescans
+    // every provider (the refresh button, ml4w-install-system-updates and
+    // "qs ipc call updates refresh"); `reset` clears the badge immediately.
+    IpcHandler {
+        target: "updates"
+        function refresh(): void { root.refreshUpdateCenter(true) }
+        function toggle(): void { root.toggleUpdateCenter() }
+        function open(): void { root.updateCenterOpen = true }
+        function close(): void { root.updateCenterOpen = false }
+        function reset(): void {
+            root.updateCenterCount = 0
+            root.updateCenterGitHub = 0
+        }
+    }
+
     color: "transparent"
 
     // Full-width strip anchored to the top of the screen
@@ -768,6 +893,13 @@ PanelWindow {
             width: root.audioMenuOpen ? Math.round(audioOutputPanel.width) : 0
             height: root.audioMenuOpen ? Math.round(audioOutputPanel.height) : 0
         }
+        // The Update Center card, same reasoning: it hangs below the bar.
+        Region {
+            x: root.updateCenterOpen ? Math.round(updateCenterPanel.x) : 0
+            y: root.updateCenterOpen ? Math.round(updateCenterPanel.y) : 0
+            width: root.updateCenterOpen ? Math.round(updateCenterPanel.width) : 0
+            height: root.updateCenterOpen ? Math.round(updateCenterPanel.height) : 0
+        }
     }
 
     // A click anywhere in this window that is not on a panel or on a module
@@ -776,10 +908,11 @@ PanelWindow {
     // get the click first.
     MouseArea {
         anchors.fill: parent
-        enabled: root.calendarOpen || root.audioMenuOpen
+        enabled: root.calendarOpen || root.audioMenuOpen || root.updateCenterOpen
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: {
             root.calendarOpen = false
+            root.updateCenterOpen = false
             if (root.volumeRef)
                 root.volumeRef.closeOutputMenu()
         }
@@ -891,8 +1024,10 @@ PanelWindow {
             Keys.onReturnPressed: root.activateFocused()
             Keys.onEnterPressed: root.activateFocused()
             Keys.onEscapePressed: {
-                // Close the calendar first; a second Escape collapses the bar.
-                if (root.calendarOpen)
+                // Close an open panel first; a second Escape collapses the bar.
+                if (root.updateCenterOpen)
+                    root.updateCenterOpen = false
+                else if (root.calendarOpen)
                     root.calendarOpen = false
                 else
                     root.barExpanded = false
@@ -1056,6 +1191,36 @@ PanelWindow {
         // taken off the panel's own position.
         readonly property int calendarGap: 26
         openY: Math.round(pill.y + pill.height + calendarGap - cardInset)
+    }
+
+    // ==========================================
+    // UPDATE CENTER
+    // ==========================================
+    UpdateCenter {
+        id: updateCenterPanel
+
+        isOpen: root.updateCenterOpen
+        providers: root.updateCenterProviders
+        scanning: root.updateCenterScanning
+        error: root.updateCenterError
+        checked: root.updateCenterChecked
+
+        onRefreshRequested: root.refreshUpdateCenter(true)
+        onActionRequested: identifier => root.runUpdateAction(identifier)
+        onCloseRequested: root.updateCenterOpen = false
+
+        // Hang below the bar, centred on the update icon (the first module in
+        // the right area) and clamped so the card always stays on screen.
+        x: {
+            if (!root.updatesRef)
+                return Math.round(root.width - width - 8)
+            let host = root.updatesRef.parent
+            let iconCenter = pill.x + rightArea.x + (host ? host.x : 0)
+                + root.updatesRef.x + root.updatesRef.width / 2
+            return Math.round(Math.max(8,
+                Math.min(root.width - width - 8, iconCenter - width / 2)))
+        }
+        openY: Math.round(pill.y + pill.height + 26 - cardInset)
     }
 
     // This dropdown lives in the statusbar layer surface itself so its rows
