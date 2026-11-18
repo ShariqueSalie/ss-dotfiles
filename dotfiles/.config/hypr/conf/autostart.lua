@@ -64,6 +64,12 @@ hl.on("hyprland.start", function ()
     -- Load cliphist history
     hl.exec_cmd("wl-paste --watch cliphist store")
 
+    -- nm-applet and blueman: their systemd xdg-autostart units fire before
+    -- WAYLAND_DISPLAY and the tray host exist and exit immediately, so start
+    -- them here once the session (and the Quickshell tray) are up. The pgrep
+    -- guards keep a second instance from starting.
+    hl.exec_cmd("sh -c 'sleep 6; pgrep -x nm-applet >/dev/null || setsid nm-applet --indicator >/dev/null 2>&1 & pgrep -x blueman-applet >/dev/null || setsid blueman-applet >/dev/null 2>&1 &'")
+
     -- Start autostart cleanup
     hl.exec_cmd("~/.config/hypr/scripts/cleanup.sh")
 end)

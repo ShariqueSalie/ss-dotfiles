@@ -108,13 +108,19 @@ hl.bind(mainMod .. " + CTRL + C", hl.dsp.exec_cmd("qs ipc call calendar toggle")
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("qs ipc call statusbar focus"), { description = "Expand statusbar and focus it for keyboard navigation" })
 hl.bind(mainMod .. " + ALT + G", hl.dsp.exec_cmd("~/.config/hypr/scripts/gamemode.sh"), { description = "Toggle game mode" })
 hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-power -l"), { description = "Lock Screen" })
+
+-- Power button: open the ML4W power menu instead of letting systemd-logind
+-- shut the machine down. setup/_powerkey.sh sets HandlePowerKey=ignore.
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd("ml4w-powermenu toggle"), { locked = true, description = "Open power menu" })
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-hyprsunset"), { description = "Toggle Hyprsunset" })
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs -p ~/.local/share/quickshell-overview ipc call overview toggle"), { description = "Open Select Window Menu" })
 hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd("~/.config/ml4w/themes/themes.sh"), { description = "Open theme switcher" })
 
 -- Hypr App Switcher
-hl.bind("ALT + Tab",         hl.dsp.exec_cmd("qs -p ~/.local/share/hypr-app-switcher ipc call app-switcher next"), { description = "Switch applications on active workspace" })
-hl.bind("ALT + SHIFT + Tab", hl.dsp.exec_cmd("qs -p ~/.local/share/hypr-app-switcher ipc call app-switcher prev"), { description = "Switch applications on active workspace (backwards)" })
+-- next/prev only preview the selection; the wrapper commits it (release) after
+-- a short pause, otherwise ALT+Tab opens the HUD but never moves focus.
+hl.bind("ALT + Tab",         hl.dsp.exec_cmd("~/.config/hypr/scripts/app-switcher-step.sh next"), { description = "Switch applications on active workspace" })
+hl.bind("ALT + SHIFT + Tab", hl.dsp.exec_cmd("~/.config/hypr/scripts/app-switcher-step.sh prev"), { description = "Switch applications on active workspace (backwards)" })
 
 -- Special workspace (scratchpad)
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("scratchpad"), { description = "Toggle special workspace scratchpad" })
