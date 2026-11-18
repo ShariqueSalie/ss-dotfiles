@@ -9,7 +9,7 @@ Item {
     // Set by the parent: when true the date is revealed and the time shifts up.
     property bool expanded: false
     // Qt date/time format for the time, supplied from config.json.
-    property string timeFormat: "HH:mm"
+    property string timeFormat: "HH:mm:ss"
     // Qt date/time format for the date shown below the time when expanded.
     property string dateFormat: "ddd, dd MMM"
     // Optional shell command for an external calendar app (e.g. "gnome-calendar"),
@@ -65,10 +65,10 @@ Item {
         }
     }
 
-    // Live clock, only ticks once per minute.
+    // Live clock: ticks every second so the seconds stay accurate.
     SystemClock {
         id: clock
-        precision: SystemClock.Minutes
+        precision: SystemClock.Seconds
     }
 
     // Left click toggles the Calendar app via IPC, right click opens the

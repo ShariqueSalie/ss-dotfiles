@@ -45,7 +45,7 @@ The dock (ml4w-dock) follows the same file through its theme.opacityFile.
         "expanded": 0.8
     },
     "clock": {
-        "format": "HH:mm",
+        "format": "HH:mm:ss",
         "dateFormat": "ddd, dd MMM",
         "calendarCommand": ""
     },
