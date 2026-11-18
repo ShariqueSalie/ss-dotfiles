@@ -87,7 +87,12 @@ Rectangle {
                 }
 
                 onClicked: (mouse) => {
-                    if (mouse.button === Qt.LeftButton && !modelData.onlyMenu) {
+                    // nm-applet (the network/Wi-Fi icon) exposes no Activate
+                    // method, only a DBusMenu, so a left click must open the
+                    // menu instead of calling activate().
+                    const leftOpensMenu = modelData.onlyMenu
+                        || modelData.id === "nm-applet"
+                    if (mouse.button === Qt.LeftButton && !leftOpensMenu) {
                         modelData.activate()
                     } else if (modelData.hasMenu) {
                         trayMenu.open()
