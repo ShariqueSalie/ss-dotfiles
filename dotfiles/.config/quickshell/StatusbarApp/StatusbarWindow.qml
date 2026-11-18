@@ -75,8 +75,10 @@ PanelWindow {
     // kept in sync with them.
     readonly property var defaultSettings: ({
         "bar":    { "height": 40, "reservedHeight": 72, "enabled": true,
-                    "alwaysExpanded": true, "autohide": false, "hideDelay": 400 },
-        "pill":   { "collapsedWidth": 0, "expandedWidth": 680, "radius": 12, "animationDuration": 350 },
+                    "alwaysExpanded": true, "autohide": false, "hideDelay": 400,
+                    "topGap": 0 },
+        "pill":   { "collapsedWidth": 0, "expandedWidth": 680, "radius": 0,
+                    "fullWidth": true, "animationDuration": 350 },
         "modules":{ "left": ["terminal", "workspaces", "clipboard"],
                     "center": ["launcher", "clock", "swaync"],
                     "right": ["updates", "battery", "powerprofile", "volume", "systemtray", "logo", "power"] },
@@ -797,10 +799,13 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: revealedOffset + revealShift
 
-        // Offset that centers the pill within the reserved band; the window is
-        // taller than the band (to fit the shadow / expanded pill).
+        // Offset that puts the pill's top edge at bar.topGap. The window is
+        // taller than the band (to fit the shadow / expanded pill), so the
+        // centering has to be shifted. topGap 0 pins the bar flush against the
+        // screen edge, like a dwm-style bar; reservedHeight still decides where
+        // windows start below it.
         readonly property real revealedOffset:
-            (root.reservedHeight / 2) - (root.implicitHeight / 2)
+            (root.settings.bar.topGap + height / 2) - (root.implicitHeight / 2)
         // Offset that leaves only a 3px sliver of the pill at the top of the
         // screen, i.e. slid fully out of view.
         readonly property real hiddenOffset:
@@ -848,7 +853,11 @@ PanelWindow {
         property real expandedWidth: Math.max(
             root.settings.pill.expandedWidth, contentWidth)
 
-        width: expanded ? expandedWidth : collapsedWidth
+        // fullWidth stretches the bar edge to edge (dwm style); otherwise it
+        // stays the configured floating pill.
+        width: expanded
+            ? (root.settings.pill.fullWidth ? root.width : expandedWidth)
+            : collapsedWidth
         height: expanded ? root.barHeight + 10 : root.barHeight
 
         Behavior on width {

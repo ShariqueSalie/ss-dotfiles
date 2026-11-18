@@ -22,12 +22,14 @@ The dock (ml4w-dock) follows the same file through its theme.opacityFile.
         "enabled": true,
         "alwaysExpanded": true,
         "autohide": false,
-        "hideDelay": 400
+        "hideDelay": 400,
+        "topGap": 0
     },
     "pill": {
         "collapsedWidth": 0,
         "expandedWidth": 680,
-        "radius": 12,
+        "radius": 0,
+        "fullWidth": true,
         "animationDuration": 350
     },
     "modules": {
