@@ -5,6 +5,7 @@ import QtQuick
 // Nerd Font glyph from that desktop's bar instead of an SVG.
 BarButton {
     glyph: "󰰣"
+    glyphSize: 23
     onClicked: {
         Quickshell.execDetached(["bash", "-c",
             Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-launcher"])

@@ -991,7 +991,10 @@ PanelWindow {
         width: expanded
             ? (root.settings.pill.fullWidth ? root.width : expandedWidth)
             : collapsedWidth
-        height: expanded ? root.barHeight + 10 : root.barHeight
+        // No extra height on top of the bar height: with the flush, full-width
+        // bar the old +10 only added empty background above and below the
+        // modules.
+        height: root.barHeight
 
         Behavior on width {
             NumberAnimation {
@@ -1053,7 +1056,12 @@ PanelWindow {
             id: pillBg
             anchors.fill: parent
             radius: root.settings.pill.radius
-            borderWidth: root.settings.border.width
+            // The border ring is drawn outside an inset fill. A flush,
+            // square-cornered bar has no edge to frame, and the invisible
+            // inset would leave a thin strip of wallpaper above the bar.
+            borderWidth: (root.settings.pill.fullWidth
+                && root.settings.pill.radius === 0) ? 0
+                : root.settings.border.width
             fillOpacity: {
                 let exp = root.settings.opacity.expanded
                 let col = root.settings.opacity.collapsed
