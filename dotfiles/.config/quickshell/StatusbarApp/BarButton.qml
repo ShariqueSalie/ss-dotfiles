@@ -7,6 +7,11 @@ Rectangle {
     id: btn
     property string iconSrc: ""
     property bool colorize: true
+    // Optional Nerd Font glyph shown instead of `iconSrc`. Used for the dwm-s
+    // "S" logo, which only exists as a Private Use Area character in the
+    // Meslo Nerd Font (Fira Sans has no glyph for it).
+    property string glyph: ""
+    property int glyphSize: 20
     // Set by the keyboard navigation in StatusbarWindow to highlight the
     // currently selected module.
     property bool focused: false
@@ -34,6 +39,7 @@ Rectangle {
 
     Image {
         anchors.centerIn: parent
+        visible: btn.glyph === ""
         source: btn.iconSrc
         width: 18
         height: 18
@@ -49,6 +55,19 @@ Rectangle {
             Behavior on colorizationColor {
                 ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
             }
+        }
+    }
+
+    Text {
+        anchors.centerIn: parent
+        visible: btn.glyph !== ""
+        text: btn.glyph
+        color: btn.active ? Theme.background : Theme.primary
+        font.family: Theme.iconFontFamily
+        font.pixelSize: btn.glyphSize
+
+        Behavior on color {
+            ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
         }
     }
 

@@ -276,12 +276,12 @@ FloatingWindow {
                     Quickshell.execDetached(["xdg-open", "https://ml4w.com/os/"])
                     }
                 }
-                ML4WMenuItem { text: qsTr("ML4W OS GitHub"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/mylinuxforwork/dotfiles"]) 
+                ML4WMenuItem { text: qsTr("Dotfiles GitHub"); onClicked: { 
+                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/dotfiles"]) 
                     } 
                 }
-                ML4WMenuItem { text: qsTr("ML4W OS Changelog"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/mylinuxforwork/dotfiles/blob/main/CHANGELOG.md"]) 
+                ML4WMenuItem { text: qsTr("Dotfiles Commits"); onClicked: { 
+                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/dotfiles/commits/main"]) 
                     } 
                 }
                 ML4WMenuItem { text: qsTr("ML4W YouTube Channel"); onClicked: { 
@@ -294,15 +294,11 @@ FloatingWindow {
                 }
                 ML4WMenuSeparator {}
                 ML4WMenuItem { text: qsTr("Hyprland Homepage"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/mylinuxforwork/wallpaper"]) 
+                    Quickshell.execDetached(["xdg-open", "https://hypr.land"]) 
                     } 
                 }
                 ML4WMenuItem { text: qsTr("Hyprland Wiki"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/mylinuxforwork/wallpaper"]) 
-                    } 
-                }
-                ML4WMenuItem { text: qsTr("Update ML4W OS"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://ml4w.com/os/getting-started/update"]) 
+                    Quickshell.execDetached(["xdg-open", "https://wiki.hypr.land"]) 
                     } 
                 }
 

@@ -8,6 +8,9 @@ QtObject {
     
     // Static properties
     readonly property string fontFamily: "Fira Sans Semibold"
+    // Nerd Font used for glyph icons (the dwm-s "S" logo and similar); Fira
+    // Sans does not carry the Private Use Area glyphs.
+    readonly property string iconFontFamily: "MesloLGS Nerd Font Mono"
     
     // True while the loaded palette is a light one. Derived from the palette
     // itself rather than read from the GTK preference, so it updates atomically
