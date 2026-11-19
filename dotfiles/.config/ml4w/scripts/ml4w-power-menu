@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Show or hide the ML4W Power Menu, starting it first when it is not running.
+#
+# ml4w-powermenu's own "toggle" only sends an IPC call, so it exits with
+# "No running instances" when the menu's quickshell process is gone -- which
+# is what happens after the desktop's quickshell apps are restarted. The bar's
+# power button, the XF86PowerOff key and SUPER+CTRL+P all call this script, so
+# they keep working even in that state.
+
+set -uo pipefail
+
+if ! command -v ml4w-powermenu >/dev/null 2>&1; then
+    echo "ml4w-power-menu: ml4w-powermenu is not installed" >&2
+    exit 1
+fi
+
+# Already running: toggle it and we are done.
+if ml4w-powermenu toggle >/dev/null 2>&1; then
+    exit 0
+fi
+
+# Not running: start it (quickshell maps the pill only while open, so the
+# fresh instance starts closed), then open it.
+setsid ml4w-powermenu start >/dev/null 2>&1 </dev/null &
+
+for _ in $(seq 1 60); do
+    sleep 0.1
+    if ml4w-powermenu open >/dev/null 2>&1; then
+        exit 0
+    fi
+done
+
+echo "ml4w-power-menu: the power menu did not start" >&2
+exit 1

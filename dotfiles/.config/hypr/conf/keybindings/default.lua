@@ -86,7 +86,7 @@ hl.bind(mainMod .. " + ALT + F", hl.dsp.exec_cmd("~/.config/hypr/scripts/screens
 hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh --instant-area"), { description = "Take an instant area screenshot and and save it" })
 hl.bind(mainMod .. " + SHIFT + ALT + S", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh --instant-area-copy"), { description = "Take an instant area screenshot and copy it to the clipboard" })
 hl.bind(mainMod .. " + ALT + A", hl.dsp.exec_cmd("~/.config/hypr/scripts/text-extractor.sh"), { description = "Extract text from an area" })
-hl.bind(mainMod .. " + CTRL + P", hl.dsp.exec_cmd("ml4w-powermenu toggle"), { description = "Start Power Menu" })
+hl.bind(mainMod .. " + CTRL + P", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-power-menu"), { description = "Start Power Menu" })
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-wallpaper-app --carousel"), { description = "Open wallpaper carousel" })
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-wallpaper-app --random"), { description = "Change the wallpaper" })
 hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-wallpaper-app"), { description = "Open wallpaper selector" })
@@ -111,7 +111,7 @@ hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-p
 
 -- Power button: open the ML4W power menu instead of letting systemd-logind
 -- shut the machine down. setup/_powerkey.sh sets HandlePowerKey=ignore.
-hl.bind("XF86PowerOff", hl.dsp.exec_cmd("ml4w-powermenu toggle"), { locked = true, description = "Open power menu" })
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-power-menu"), { locked = true, description = "Open power menu" })
 hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-hyprsunset"), { description = "Toggle Hyprsunset" })
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("qs -p ~/.local/share/quickshell-overview ipc call overview toggle"), { description = "Open Select Window Menu" })
 hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd("~/.config/ml4w/themes/themes.sh"), { description = "Open theme switcher" })
