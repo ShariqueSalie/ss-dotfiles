@@ -100,6 +100,10 @@ hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-
 hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-dock"), { description = "Toggle Dock" })
 hl.bind(mainMod .. " + ALT + D", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-dock-autohide"), { description = "Toggle Dock Autohide" })
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.config/hypr/scripts/loadconfig.sh"), { description = "Reload hyprland config" })
+-- Restart the Quickshell desktop (starting any component that is down) and
+-- NetworkManager. Ported from the dwm-s control centre.
+hl.bind(mainMod .. " + CTRL + SHIFT + R", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-restart-quickshell"), { description = "Restart the Quickshell desktop" })
+hl.bind(mainMod .. " + CTRL + SHIFT + N", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-restart-network"), { description = "Restart NetworkManager" })
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-cliphist"), { description = "Open clipboard manager" })
 hl.bind(mainMod .. " + CTRL + T", hl.dsp.exec_cmd("~/.config/waybar/themeswitcher.sh"), { description = "Open waybar theme switcher" })
 hl.bind(mainMod .. " + SHIFT + M", hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-theme"), { description = "Toggle between light and dark mode" })

@@ -441,6 +441,26 @@ Item {
                     onClicked: panel.actionRequested("dnf-upgrade-refresh")
                 }
             }
+
+            // Desktop maintenance: restart the Quickshell shell (starting any
+            // component that is down) or NetworkManager. The network restart
+            // opens a terminal, like the dnf buttons, so sudo can prompt.
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                MiniButton {
+                    Layout.fillWidth: true
+                    label: "Restart Quickshell"
+                    onClicked: panel.actionRequested("quickshell-restart")
+                }
+
+                MiniButton {
+                    Layout.fillWidth: true
+                    label: "Restart Network"
+                    onClicked: panel.actionRequested("network-restart")
+                }
+            }
         }
     }
 }

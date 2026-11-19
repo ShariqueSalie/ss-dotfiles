@@ -401,6 +401,28 @@ def launch_update(identifier):
             " qs ipc call updates refresh >/dev/null 2>&1;"
             " echo; read -n 1 -s -r -p 'Press any key to close...'")
 
+    # Desktop maintenance buttons below the dnf row. The quickshell restart
+    # has to outlive the shell it replaces, so it runs detached instead of as
+    # a child of the card's process. The network restart opens a terminal for
+    # sudo, like the dnf buttons.
+    if identifier == "quickshell-restart":
+        script = os.path.join(HOME, ".config", "ml4w", "scripts",
+                              "ml4w-restart-quickshell")
+        if not os.access(script, os.X_OK):
+            return False
+        subprocess.Popen(["bash", script], start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+
+    if identifier == "network-restart":
+        script = os.path.join(HOME, ".config", "ml4w", "scripts",
+                              "ml4w-restart-network")
+        if not os.access(script, os.X_OK):
+            return False
+        return run_in_terminal(
+            "bash " + shlex.quote(script) + " --in-terminal;"
+            " echo; read -n 1 -s -r -p 'Press any key to close...'")
+
     return False
 
 

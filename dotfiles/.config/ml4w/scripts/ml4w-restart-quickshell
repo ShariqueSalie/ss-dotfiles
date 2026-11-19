@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+#
+# Restart the ML4W Quickshell desktop and start any part of it that is down.
+#
+# This is the ML4W port of dwm-s's "restart-quickshell" control-centre action.
+# dwm-s's helper cannot be reused here: it targets one `quickshell` process
+# plus its own version-check/notify helpers, while ML4W runs `qs` with several
+# separate configs -- the bar/sidebar/welcome shell, the dock, the overview,
+# the app switcher and the power menu.
+#
+#   ml4w-restart-quickshell           restart everything, healing what is down
+#   ml4w-restart-quickshell --check   report dependencies and state, change nothing
+#
+# The bar/sidebar shell is restarted; the other components are only started
+# when they are not running, so a restart does not disturb a working dock.
+
+set -uo pipefail
+
+MAIN_DIR="$HOME/.config/quickshell"
+MAIN_CONFIG="$MAIN_DIR/shell.qml"
+BAR_SETTING="$HOME/.config/ml4w/settings/statusbar"
+
+# name|config directory|command used to start it
+COMPONENTS=(
+    "dock|$HOME/.local/share/ml4w-dock|ml4w-dock start"
+    "overview|$HOME/.local/share/quickshell-overview|qs -n -p $HOME/.local/share/quickshell-overview"
+    "app switcher|$HOME/.local/share/hypr-app-switcher|qs -n -p $HOME/.local/share/hypr-app-switcher"
+    "power menu|$HOME/.local/share/ml4w-powermenu|ml4w-powermenu start"
+)
+
+say() { printf '%s\n' "$*"; }
+warn() { printf 'ml4w-restart-quickshell: %s\n' "$*" >&2; }
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send "ML4W" "$1" >/dev/null 2>&1; }
+running() { qs -p "$1" ipc show >/dev/null 2>&1; }
+first_word() { printf '%s' "${1%% *}"; }
+
+# Status bar backend: quickshell (default) or waybar.
+bar_backend() {
+    if [ -f "$BAR_SETTING" ]; then
+        tr -d '[:space:]' < "$BAR_SETTING"
+    else
+        printf 'quickshell'
+    fi
+}
+
+# Hard dependencies. Returns non-zero and prints what is missing.
+check_dependencies() {
+    local ok=0
+
+    if command -v qs >/dev/null 2>&1; then
+        say "qs             ok  $(command -v qs) ($(qs --version 2>/dev/null | head -1))"
+    else
+        warn "quickshell (qs) is not installed"
+        ok=1
+    fi
+
+    if [ -f "$MAIN_CONFIG" ]; then
+        say "config         ok  $MAIN_CONFIG"
+    else
+        warn "missing config: $MAIN_CONFIG"
+        ok=1
+    fi
+
+    if [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+        say "session        ok  WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-}"
+    else
+        warn "not inside a Wayland/Hyprland session (WAYLAND_DISPLAY and HYPRLAND_INSTANCE_SIGNATURE are empty)"
+        ok=1
+    fi
+
+    say "statusbar      $(bar_backend)"
+
+    local entry name dir command
+    for entry in "${COMPONENTS[@]}"; do
+        IFS='|' read -r name dir command <<<"$entry"
+        if [ ! -d "$dir" ]; then
+            say "$name  missing  ($dir is not installed)"
+        elif running "$dir"; then
+            say "$name  ok  running"
+        else
+            say "$name  down  (can start with: $command)"
+        fi
+    done
+
+    command -v notify-send >/dev/null 2>&1 \
+        && say "notify-send    ok" \
+        || say "notify-send    missing (no desktop notification, restart still works)"
+
+    return "$ok"
+}
+
+# Wait until the main shell's IPC is answering.
+wait_for_main() {
+    local i
+    for i in $(seq 1 120); do
+        if qs -p "$MAIN_DIR" ipc call theme-manager reload >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 0.1
+    done
+    return 1
+}
+
+# Stop the running bar/sidebar shell and wait for it to release the sockets.
+stop_main() {
+    qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1 || return 0
+    qs kill -p "$MAIN_DIR" >/dev/null 2>&1 || true
+
+    local i
+    for i in $(seq 1 50); do
+        qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1 || return 0
+        sleep 0.1
+    done
+    return 1
+}
+
+start_main() {
+    setsid qs >/dev/null 2>&1 </dev/null &
+}
+
+# Start a component only when its config directory is installed and its
+# instance is not answering IPC.
+heal_component() {
+    local name=$1 dir=$2 command=$3
+    if [ ! -d "$dir" ]; then
+        say "skip $name (not installed)"
+        return 0
+    fi
+    if running "$dir"; then
+        say "$name already running"
+        return 0
+    fi
+    say "starting $name"
+    # shellcheck disable=SC2086 # command is a small fixed command line
+    setsid $command >/dev/null 2>&1 </dev/null &
+}
+
+if [ "${1:-}" = "--check" ] || [ "${1:-}" = "-c" ]; then
+    check_dependencies
+    exit $?
+fi
+
+case "${1:-}" in
+    "" | restart) ;;
+    -h | --help)
+        say "usage: $(basename "$0") [--check]"
+        exit 0
+        ;;
+    *)
+        warn "unknown argument: $1"
+        say "usage: $(basename "$0") [--check]"
+        exit 2
+        ;;
+esac
+
+if ! command -v qs >/dev/null 2>&1; then
+    warn "quickshell (qs) is not installed"
+    exit 1
+fi
+if [ ! -f "$MAIN_CONFIG" ]; then
+    warn "missing config: $MAIN_CONFIG"
+    exit 1
+fi
+if [ -z "${WAYLAND_DISPLAY:-}" ] && [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    warn "no Wayland/Hyprland session in this environment; refusing to restart the shell"
+    exit 1
+fi
+
+# Waybar may be the configured status bar instead of quickshell.
+case "$(bar_backend)" in
+    waybar)
+        say "statusbar is waybar; restarting it instead of the quickshell shell"
+        if [ -x "$HOME/.config/waybar/launch.sh" ]; then
+            setsid "$HOME/.config/waybar/launch.sh" >/dev/null 2>&1 </dev/null &
+            notify "Waybar restarted"
+            exit 0
+        fi
+        warn "waybar launch script is missing"
+        exit 1
+        ;;
+esac
+
+say "restarting the ML4W Quickshell shell"
+if ! stop_main; then
+    warn "the old shell did not stop"
+    exit 1
+fi
+
+start_main
+if ! wait_for_main; then
+    warn "the shell did not come back up"
+    notify "Quickshell restart failed"
+    exit 1
+fi
+say "shell is up"
+
+# Self-heal: bring back the components that are supposed to be running.
+for entry in "${COMPONENTS[@]}"; do
+    IFS='|' read -r name dir command <<<"$entry"
+    heal_component "$name" "$dir" "$command"
+done
+
+notify "Quickshell restarted"
+exit 0

@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+# Restart NetworkManager, with dependency checks and a self-healing start.
+#
+# Ported from dwm-s (dwm-quickshell-controlcenter action restart-networkmanager).
+# sudo needs a TTY for the password, so the default mode opens the configured
+# ML4W terminal; --in-terminal runs the restart inline for callers that already
+# have a terminal open.
+#
+#   ml4w-restart-network                open a terminal and restart NetworkManager
+#   ml4w-restart-network --in-terminal  restart in the terminal that is already open
+#   ml4w-restart-network --check        report dependencies and state, change nothing
+#
+# "restart" also starts NetworkManager when it is stopped, so a dead network
+# service is healed by the same action.
+
+set -uo pipefail
+
+SERVICE=NetworkManager
+SCRIPT="$(readlink -f "$0")"
+MODE=terminal
+
+say() { printf '%s\n' "$*"; }
+warn() { printf 'ml4w-restart-network: %s\n' "$*" >&2; }
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send "NetworkManager" "$1" >/dev/null 2>&1; }
+
+check_dependencies() {
+    local ok=0
+
+    if command -v systemctl >/dev/null 2>&1; then
+        say "systemctl      ok  $(command -v systemctl)"
+    else
+        warn "systemctl is not available"
+        ok=1
+    fi
+
+    if systemctl list-unit-files "$SERVICE.service" >/dev/null 2>&1; then
+        say "unit           ok  $SERVICE.service"
+    else
+        warn "$SERVICE.service was not found"
+        ok=1
+    fi
+
+    if command -v nmcli >/dev/null 2>&1; then
+        say "nmcli          ok  $(command -v nmcli)"
+    else
+        say "nmcli          missing (status reporting only)"
+    fi
+
+    if systemctl is-active --quiet "$SERVICE"; then
+        say "state          active"
+    else
+        say "state          inactive (the restart will start it)"
+    fi
+
+    if [ "$MODE" = terminal ]; then
+        local terminal
+        terminal=$(cat "$HOME/.config/ml4w/settings/terminal.sh" 2>/dev/null)
+        [ -n "$terminal" ] || terminal=kitty
+        if command -v "${terminal%% *}" >/dev/null 2>&1; then
+            say "terminal       ok  $terminal"
+        else
+            warn "terminal '${terminal%% *}' is not installed"
+            ok=1
+        fi
+    fi
+
+    return "$ok"
+}
+
+restart_inline() {
+    say "Restarting $SERVICE..."
+    if ! sudo systemctl restart "$SERVICE"; then
+        warn "sudo systemctl restart $SERVICE failed"
+        notify "restart failed"
+        return 1
+    fi
+
+    local i
+    for i in $(seq 1 30); do
+        systemctl is-active --quiet "$SERVICE" && break
+        sleep 0.5
+    done
+
+    if systemctl is-active --quiet "$SERVICE"; then
+        say "$SERVICE is active"
+        if command -v nmcli >/dev/null 2>&1; then
+            say "network state: $(nmcli -t -f STATE general 2>/dev/null)"
+        fi
+        notify "restarted"
+        return 0
+    fi
+
+    warn "$SERVICE did not come back up; check: journalctl -u $SERVICE"
+    notify "failed to start"
+    return 1
+}
+
+case "${1:-}" in
+    "" | restart) ;;
+    --in-terminal) MODE=inline ;;
+    --check | -c) MODE=check ;;
+    -h | --help)
+        say "usage: $(basename "$0") [--in-terminal|--check]"
+        exit 0
+        ;;
+    *)
+        warn "unknown argument: $1"
+        say "usage: $(basename "$0") [--in-terminal|--check]"
+        exit 2
+        ;;
+esac
+
+if [ "$MODE" = check ]; then
+    check_dependencies
+    exit $?
+fi
+
+if [ "$MODE" = inline ]; then
+    restart_inline
+    exit $?
+fi
+
+# Dependency check before opening a terminal, so a missing piece is reported
+# instead of leaving an empty window behind.
+check_dependencies >/dev/null || exit 1
+
+terminal=$(cat "$HOME/.config/ml4w/settings/terminal.sh" 2>/dev/null)
+[ -n "$terminal" ] || terminal=kitty
+command -v "${terminal%% *}" >/dev/null 2>&1 || {
+    warn "terminal '${terminal%% *}' is not installed"
+    exit 1
+}
+
+# shellcheck disable=SC2086 # the terminal command may carry its own arguments
+setsid $terminal --class dotfiles-floating -e bash -lc \
+    "bash '$SCRIPT' --in-terminal; echo; read -n 1 -s -r -p 'Press any key to close...'" \
+    >/dev/null 2>&1 </dev/null &
