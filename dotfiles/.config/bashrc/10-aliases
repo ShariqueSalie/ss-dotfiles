@@ -27,7 +27,7 @@ alias clock='tty-clock'
 alias system='~/.config/ml4w/settings/systemmonitor'
 alias quick='~/.config/ml4w/bin/ml4w-quicklinks'
 alias wallpaper='~/.config/ml4w/bin/ml4w-wallpaper'
-alias settings='ml4w-dotfiles-settings com.ml4w.dotfiles'
+alias settings='ml4w-dotfiles-settings com.sali3.dotfiles'
 
 # -----------------------------------------------------
 # ML4W Apps

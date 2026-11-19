@@ -1,11 +1,11 @@
 {
-	"name": "ML4W OS - Dotfiles for Hyprland (ROLLING RELEASE)",
-	"id": "com.ml4w.dotfiles",
-	"description": "Advanced configuration for the dynamic tiling window manager Hyprland.",
-	"version":"2.17.1",
-	"author": "Stephan Raabe",
-	"homepage": "https://ml4w.com/os/",
-	"dependencies": "https://ml4w.com/os/getting-started/dependencies",
+	"name": "S@LI3 OS - Dotfiles for Hyprland (ROLLING RELEASE)",
+	"id": "com.sali3.dotfiles",
+	"description": "Advanced configuration for the dynamic tiling window manager Hyprland, tuned for Fedora.",
+	"version":"1.1.2",
+	"author": "Sharique Salie",
+	"homepage": "https://github.com/ShariqueSalie/ss-dotfiles",
+	"dependencies": "https://github.com/ShariqueSalie/ss-dotfiles#readme",
 	"source": "https://github.com/ShariqueSalie/ss-dotfiles.git",
 	"subfolder": "dotfiles",
 	"restore":[

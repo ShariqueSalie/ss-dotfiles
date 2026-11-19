@@ -91,7 +91,7 @@ fi
 
 # Start ML4W Settings App
 info "Starting ML4W Dotfiles Settings"
-PROFILE="com.ml4w.dotfiles" qs -p $HOME/.local/share/ml4w-dotfiles-settings/quickshell &
+PROFILE="com.sali3.dotfiles" qs -p $HOME/.local/share/ml4w-dotfiles-settings/quickshell &
 info "ML4W Dotfiles Settings started"
 
 # Start Quickshell Overview
