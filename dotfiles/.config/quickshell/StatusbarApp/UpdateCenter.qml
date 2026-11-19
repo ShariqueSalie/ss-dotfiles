@@ -39,7 +39,7 @@ Item {
     readonly property int maximumHeight: panel.parent
         ? Math.max(200, Math.round(panel.parent.height - openY - 20))
         : 520
-    readonly property int contentHeight: cardColumn.implicitHeight + 2 * cardInset
+    readonly property int contentHeight: cardColumn.implicitHeight + 2 * cardInset + 2 * 18
     implicitHeight: Math.min(maximumHeight, Math.max(160, contentHeight))
     width: implicitWidth
     height: implicitHeight
