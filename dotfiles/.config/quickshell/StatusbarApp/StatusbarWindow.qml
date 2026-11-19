@@ -866,7 +866,13 @@ PanelWindow {
             x: 0
             y: 0
             width: (root.autohide || !root.barTakesInput) ? 0 : root.width
-            height: (root.autohide || !root.barTakesInput) ? 0 : root.bandHeight
+            // Only the strip the bar is actually drawn in takes input. The
+            // window is taller than that (calendar reserve), and using the
+            // full band here used to swallow the first click on the top of
+            // maximized windows — e.g. browser tabs just below the bar.
+            height: (root.autohide || !root.barTakesInput)
+                ? 0
+                : root.settings.bar.topGap + root.barHeight
         }
         // The pill. While it is slid out this shrinks to nothing and the hot
         // zone below covers the sliver left at the screen edge.
