@@ -29,12 +29,12 @@ hl.on("hyprland.start", function ()
     -- whose reload_waybar starts it once matugen has written the colors.
     -- Launching it here as well started waybar twice at login (#1904).
 
-    -- Start polkit agent: prefer hyprpolkitagent.service (Ubuntu, via
-    -- packages-ubuntu -- its unit is WantedBy=graphical-session.target,
-    -- which Hyprland never activates, so start it explicitly), falling
-    -- back to polkit-gnome-authentication-agent-1 where that unit
-    -- doesn't exist. Only one should run -- starting both means
-    -- duplicate polkit auth dialogs.
+    -- Start polkit agent: prefer hyprpolkitagent.service (its unit is
+    -- WantedBy=graphical-session.target, which Hyprland never activates,
+    -- so start it explicitly), falling back to
+    -- polkit-gnome-authentication-agent-1 where that unit doesn't exist.
+    -- Only one should run -- starting both means duplicate polkit auth
+    -- dialogs.
     hl.exec_cmd("systemctl --user start hyprpolkitagent.service 2>/dev/null || /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 || true")
 
     -- Restore wallpaper (skip for quickshell — handled inside ml4w-autostart)
@@ -53,10 +53,8 @@ hl.on("hyprland.start", function ()
     -- Load GTK settings
     hl.exec_cmd("~/.config/hypr/scripts/gtk.sh")
 
-    -- Start swaync -- skipped where D-Bus activation is already set up
-    -- (marker written by post-ubuntu.sh), since an explicit exec-once
-    -- there raced with it and lost with "already running!".
-    hl.exec_cmd("[ -f ~/.config/ml4w/.swaync-dbus-activated ] || swaync")
+    -- Start swaync
+    hl.exec_cmd("swaync")
 
     -- Start hypridle
     hl.exec_cmd("hypridle")

@@ -99,19 +99,9 @@ install_packages() {
         return 0
     fi
     say "installing lightdm and slick-greeter"
-    if command -v dnf >/dev/null; then
-        run $SUDO dnf install -y lightdm slick-greeter
-    elif command -v apt-get >/dev/null; then
-        run $SUDO apt-get update
-        run $SUDO apt-get install -y lightdm slick-greeter
-    elif command -v pacman >/dev/null; then
-        run $SUDO pacman -S --needed --noconfirm lightdm lightdm-slick-greeter
-    elif command -v zypper >/dev/null; then
-        run $SUDO zypper install -y lightdm lightdm-slick-greeter ||
-            run $SUDO zypper install -y lightdm slick-greeter
-    else
-        die "unsupported distribution; install lightdm and slick-greeter first"
-    fi
+    command -v dnf >/dev/null ||
+        die "dnf not found; install lightdm and slick-greeter first (this repo targets Fedora)"
+    run $SUDO dnf install -y lightdm slick-greeter
 }
 
 # --- MesloLGS NF, system-wide so the greeter user can use it ------------

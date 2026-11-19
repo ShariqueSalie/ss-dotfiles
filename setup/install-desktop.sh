@@ -6,8 +6,8 @@
 # this fork's manifest, so the resulting desktop carries the ss.
 # customizations (statusbar, fastfetch banner, keybindings, ...).
 #
-# This needs a graphical Fedora / Arch / Ubuntu / openSUSE Tumbleweed
-# system. For a headless server use setup/install-server.sh instead.
+# This needs a graphical Fedora system. For a headless server use
+# setup/install-server.sh instead.
 #
 #   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
 #
@@ -75,22 +75,11 @@ if [[ -z "${WAYLAND_DISPLAY:-}" && -z "${DISPLAY:-}" ]]; then
 fi
 
 # --- base dependencies --------------------------------------------------
-if command -v pacman >/dev/null; then
-    say "Arch Linux detected"
-    sudo pacman -S --needed --noconfirm git make curl jq
-elif command -v dnf >/dev/null; then
-    say "Fedora detected"
-    sudo dnf install -y git make curl jq
-elif command -v zypper >/dev/null; then
-    say "openSUSE detected"
-    sudo zypper install -y git make curl jq
-elif command -v apt-get >/dev/null; then
-    say "Ubuntu detected"
-    sudo apt-get update
-    sudo apt-get install -y git make curl jq
-else
-    die "Unsupported distribution. Install git, make, curl and jq manually."
+if ! command -v dnf >/dev/null; then
+    die "Fedora (dnf) is required. On other distributions install git, make, curl and jq manually."
 fi
+say "Fedora detected"
+sudo dnf install -y git make curl jq
 
 # --- install the ML4W installer app -------------------------------------
 TEMP_DIR=$(mktemp -d -t ml4w-installer-XXXXXX)

@@ -25,7 +25,7 @@ xdg-settings get default-web-browser
 xdg-settings set default-web-browser brave-origin.desktop
 ```
 
-The other distributions keep Firefox. `~/.config/ml4w/settings/browser.sh`
+The install targets Fedora only. `~/.config/ml4w/settings/browser.sh`
 resolves whichever browser is installed, so it also works after swapping the
 default.
 

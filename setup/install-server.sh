@@ -62,42 +62,18 @@ run() {
 # This runs before the download on purpose: a minimal server may not have
 # git or curl yet, and dnf/apt can install them.
 if $INSTALL_PACKAGES; then
-    PM=""
-    if command -v dnf >/dev/null; then
-        PM=dnf
-    elif command -v apt-get >/dev/null; then
-        PM=apt
-    elif command -v pacman >/dev/null; then
-        PM=pacman
-    elif command -v zypper >/dev/null; then
-        PM=zypper
+    if ! command -v dnf >/dev/null; then
+        warn "dnf not found; skipping package install (this repo targets Fedora)"
+    else
+        SUDO=""
+        [[ $(id -u) -ne 0 ]] && SUDO="sudo"
+
+        say "installing CLI packages with dnf"
+        # RHEL needs CRB/EPEL for fastfetch and eza; a partial failure is
+        # reported but does not stop the dotfiles installation.
+        run $SUDO dnf install -y git curl tar fastfetch eza btop neovim zsh ||
+            warn "some packages failed (on RHEL enable CRB/EPEL for eza/fastfetch)"
     fi
-
-    SUDO=""
-    [[ $(id -u) -ne 0 ]] && SUDO="sudo"
-
-    say "installing CLI packages with ${PM:-none}"
-    case "$PM" in
-        dnf)
-            # RHEL needs CRB/EPEL for fastfetch and eza; a partial failure is
-            # reported but does not stop the dotfiles installation.
-            run $SUDO dnf install -y git curl tar fastfetch eza btop neovim zsh ||
-                warn "some packages failed (on RHEL enable CRB/EPEL for eza/fastfetch)"
-            ;;
-        apt)
-            run $SUDO apt-get update
-            run $SUDO apt-get install -y git curl tar fastfetch btop neovim zsh ||
-                warn "some packages failed; eza may need to be installed separately"
-            ;;
-        pacman)
-            run $SUDO pacman -S --needed --noconfirm git curl tar fastfetch eza btop neovim zsh
-            ;;
-        zypper)
-            run $SUDO zypper install -y git curl tar fastfetch eza btop neovim zsh ||
-                warn "some packages failed; eza may need to be installed separately"
-            ;;
-        *) warn "unknown package manager, skipping package install" ;;
-    esac
 fi
 
 # --- locate the dotfiles ------------------------------------------------

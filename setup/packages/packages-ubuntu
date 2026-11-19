@@ -1,3 +1,0 @@
-# Default web browser outside Fedora (Brave Origin is Fedora-only here).
-# setup/preflight-ubuntu.sh pins the Mozilla Team PPA so this is a real .deb.
-firefox
