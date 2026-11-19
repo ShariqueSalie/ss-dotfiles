@@ -23,6 +23,30 @@ bash <(curl -s https://ml4w.com/os/rolling) # Rolling Release
 ```
 Arch, Fedora, Ubuntu and openSuse Tumbleweed are directly supported.
 
+### Install this fork
+
+This fork adds personal customizations on top of ML4W (ss. branding, the
+dwm-s status bar, the ss. fastfetch banner and more). The upstream quick
+commands above clone `mylinuxforwork/dotfiles`, so they do **not** include
+these changes.
+
+Graphical desktop (Fedora, Arch, Ubuntu, openSUSE Tumbleweed):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
+```
+
+Headless server (CLI only: bash aliases, prompt, fastfetch banner, btop,
+vim — no Hyprland or quickshell):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash
+```
+
+The server install is the right choice for a machine without a display.
+Add `-- --dry-run` after `bash` to preview it, or `-- --no-packages` to skip
+package installation.
+
 ### Test and install with the ML4W OS Live ISO
 
 Test the ML4W OS without risk on your computer or in a Virtual Machine with the ML4W Live ISO.
