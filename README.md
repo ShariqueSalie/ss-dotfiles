@@ -44,8 +44,14 @@ curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/i
 ```
 
 The server install is the right choice for a machine without a display.
-Add `-- --dry-run` after `bash` to preview it, or `-- --no-packages` to skip
-package installation.
+
+```sh
+# preview without changing anything
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --dry-run
+
+# skip the package installation
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
+```
 
 ### Test and install with the ML4W OS Live ISO
 

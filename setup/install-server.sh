@@ -58,37 +58,9 @@ run() {
     fi
 }
 
-# --- locate the dotfiles ------------------------------------------------
-# Started from a clone, setup/../dotfiles is the payload. Piped through
-# curl there is no clone, so download the branch tarball instead.
-SCRIPT_DIR=""
-if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
-    SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-fi
-
-cleanup_dir=""
-if [[ -z "$REPO_DIR" ]]; then
-    if [[ -n "$SCRIPT_DIR" && -d "$SCRIPT_DIR/../dotfiles/.config" ]]; then
-        REPO_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
-        say "using local clone at $REPO_DIR"
-    else
-        if $DRY_RUN; then
-            say "would download $REPO_URL ($REF) (dry run)"
-            say "re-run from a clone or without --dry-run to try it for real"
-            exit 0
-        fi
-        command -v git >/dev/null || die "git is required to download the dotfiles"
-        cleanup_dir=$(mktemp -d -t ss-dotfiles-XXXXXX)
-        trap 'rm -rf "$cleanup_dir"' EXIT
-        say "downloading $REPO_URL ($REF)"
-        git clone --quiet --depth=1 --branch "$REF" "$REPO_URL" "$cleanup_dir/repo"
-        REPO_DIR="$cleanup_dir/repo"
-    fi
-fi
-SRC="$REPO_DIR/dotfiles"
-[[ -f "$SRC/.bashrc" ]] || die "$SRC does not look like the dotfiles repo"
-
 # --- packages -----------------------------------------------------------
+# This runs before the download on purpose: a minimal server may not have
+# git or curl yet, and dnf/apt can install them.
 if $INSTALL_PACKAGES; then
     PM=""
     if command -v dnf >/dev/null; then
@@ -109,24 +81,64 @@ if $INSTALL_PACKAGES; then
         dnf)
             # RHEL needs CRB/EPEL for fastfetch and eza; a partial failure is
             # reported but does not stop the dotfiles installation.
-            run $SUDO dnf install -y git curl fastfetch eza btop neovim zsh ||
+            run $SUDO dnf install -y git curl tar fastfetch eza btop neovim zsh ||
                 warn "some packages failed (on RHEL enable CRB/EPEL for eza/fastfetch)"
             ;;
         apt)
             run $SUDO apt-get update
-            run $SUDO apt-get install -y git curl fastfetch btop neovim zsh ||
+            run $SUDO apt-get install -y git curl tar fastfetch btop neovim zsh ||
                 warn "some packages failed; eza may need to be installed separately"
             ;;
         pacman)
-            run $SUDO pacman -S --needed --noconfirm git curl fastfetch eza btop neovim zsh
+            run $SUDO pacman -S --needed --noconfirm git curl tar fastfetch eza btop neovim zsh
             ;;
         zypper)
-            run $SUDO zypper install -y git curl fastfetch eza btop neovim zsh ||
+            run $SUDO zypper install -y git curl tar fastfetch eza btop neovim zsh ||
                 warn "some packages failed; eza may need to be installed separately"
             ;;
         *) warn "unknown package manager, skipping package install" ;;
     esac
 fi
+
+# --- locate the dotfiles ------------------------------------------------
+# Started from a clone, setup/../dotfiles is the payload. Piped through
+# curl there is no clone, so download the branch tarball instead.
+SCRIPT_DIR=""
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+fi
+
+cleanup_dir=""
+if [[ -z "$REPO_DIR" ]]; then
+    if [[ -n "$SCRIPT_DIR" && -d "$SCRIPT_DIR/../dotfiles/.config" ]]; then
+        REPO_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+        say "using local clone at $REPO_DIR"
+    else
+        if $DRY_RUN; then
+            say "would download $REPO_URL ($REF) (dry run)"
+            say "re-run from a clone or without --dry-run to try it for real"
+            exit 0
+        fi
+        cleanup_dir=$(mktemp -d -t ss-dotfiles-XXXXXX)
+        trap 'rm -rf "$cleanup_dir"' EXIT
+        if command -v git >/dev/null; then
+            say "downloading $REPO_URL ($REF)"
+            git clone --quiet --depth=1 --branch "$REF" "$REPO_URL" "$cleanup_dir/repo"
+            REPO_DIR="$cleanup_dir/repo"
+        else
+            # No git: fetch the branch tarball with whatever is available.
+            command -v curl >/dev/null && command -v tar >/dev/null ||
+                die "git (or curl and tar) is required to download the dotfiles"
+            say "downloading $REPO_URL ($REF) as a tarball"
+            curl -fsSL "https://codeload.github.com/ShariqueSalie/dotfiles/tar.gz/refs/heads/$REF" \
+                -o "$cleanup_dir/repo.tar.gz"
+            tar -xzf "$cleanup_dir/repo.tar.gz" -C "$cleanup_dir"
+            REPO_DIR="$cleanup_dir/dotfiles-$REF"
+        fi
+    fi
+fi
+SRC="$REPO_DIR/dotfiles"
+[[ -f "$SRC/.bashrc" ]] || die "$SRC does not look like the dotfiles repo"
 
 # --- prompt -------------------------------------------------------------
 if ! command -v oh-my-posh >/dev/null 2>&1; then
