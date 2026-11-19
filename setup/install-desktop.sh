@@ -105,7 +105,25 @@ command -v ml4w-dotfiles-installer >/dev/null ||
 
 # --- install this fork --------------------------------------------------
 say "installing ShariqueSalie/dotfiles from $MANIFEST_URL"
+
+# The ML4W installer asks "Do you want to proceed with the installation?"
+# through gum, which reads stdin. With the documented curl | bash one-liner
+# stdin is the pipe and already at EOF, gum treats that as "no" and the
+# installer exits with "Installation cancelled by user" after only checking
+# dependencies. Skip its prompt for a non-interactive stdin; a normal
+# interactive run still asks.
+if [ ! -t 0 ]; then
+    export ML4W_YES=1
+fi
+
 ml4w-dotfiles-installer --install "$MANIFEST_URL"
+
+# The upstream installer exits 0 even when its prompt is answered "no" (or
+# reads EOF), so it can look like a successful run while nothing was
+# installed. Fail loudly instead of printing "done" for a no-op.
+if [ ! -e "$HOME/.config/ml4w/scripts/ml4w-restart-quickshell" ]; then
+    die "the ML4W installer did not install the dotfiles. See the log in ~/.local/state/ml4w-dotfiles-installer/logs"
+fi
 
 # --- Fedora gaming packages (the dwm-s gaming profile) -----------------
 if $INSTALL_GAMING && [[ -f /etc/fedora-release ]] && [[ "$(uname -m)" == x86_64 ]]; then
