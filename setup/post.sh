@@ -68,6 +68,22 @@ source $repo_path/setup/_icons.sh
 source $repo_path/setup/_powerkey.sh
 
 # --------------------------------------------------------------
+# Networking and Bluetooth
+# --------------------------------------------------------------
+
+# The desktop menu and the bar use NetworkManager and BlueZ. Installing the
+# packages is not enough on distributions that do not enable these services
+# by default (Arch, for example), so turn them on here.
+if command -v nmcli >/dev/null 2>&1; then
+    sudo systemctl enable --now NetworkManager.service 2>/dev/null ||
+        echo "warning: could not enable NetworkManager.service" >&2
+fi
+if command -v bluetoothctl >/dev/null 2>&1; then
+    sudo systemctl enable --now bluetooth.service 2>/dev/null ||
+        echo "warning: could not enable bluetooth.service" >&2
+fi
+
+# --------------------------------------------------------------
 # Create XDG Directories
 # --------------------------------------------------------------
 
