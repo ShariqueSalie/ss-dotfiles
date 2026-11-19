@@ -30,7 +30,6 @@ COMPONENTS=(
 
 say() { printf '%s\n' "$*"; }
 warn() { printf 'ml4w-restart-quickshell: %s\n' "$*" >&2; }
-notify() { command -v notify-send >/dev/null 2>&1 && notify-send "ML4W" "$1" >/dev/null 2>&1; }
 running() { qs -p "$1" ipc show >/dev/null 2>&1; }
 first_word() { printf '%s' "${1%% *}"; }
 
@@ -84,7 +83,7 @@ check_dependencies() {
 
     command -v notify-send >/dev/null 2>&1 \
         && say "notify-send    ok" \
-        || say "notify-send    missing (no desktop notification, restart still works)"
+        || say "notify-send    missing (restart does not need it)"
 
     return "$ok"
 }
@@ -172,7 +171,6 @@ case "$(bar_backend)" in
         say "statusbar is waybar; restarting it instead of the quickshell shell"
         if [ -x "$HOME/.config/waybar/launch.sh" ]; then
             setsid "$HOME/.config/waybar/launch.sh" >/dev/null 2>&1 </dev/null &
-            notify "Waybar restarted"
             exit 0
         fi
         warn "waybar launch script is missing"
@@ -189,7 +187,6 @@ fi
 start_main
 if ! wait_for_main; then
     warn "the shell did not come back up"
-    notify "Quickshell restart failed"
     exit 1
 fi
 say "shell is up"
@@ -200,5 +197,4 @@ for entry in "${COMPONENTS[@]}"; do
     heal_component "$name" "$dir" "$command"
 done
 
-notify "Quickshell restarted"
 exit 0
