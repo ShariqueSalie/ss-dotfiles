@@ -34,8 +34,8 @@ The dock (ml4w-dock) follows the same file through its theme.opacityFile.
     },
     "modules": {
         "left":   ["launcher", "workspaces", "clipboard", "terminal"],
-        "center": ["clock", "swaync"],
-        "right":  ["updates", "battery", "powerprofile", "volume", "systemtray", "logo", "power"]
+        "center": ["clock", "swaync", "updates"],
+        "right":  ["battery", "powerprofile", "volume", "systemtray", "logo", "power"]
     },
     "border": {
         "width": 2,

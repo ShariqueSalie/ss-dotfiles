@@ -84,8 +84,8 @@ PanelWindow {
         "pill":   { "collapsedWidth": 0, "expandedWidth": 680, "radius": 0,
                     "fullWidth": true, "animationDuration": 350 },
         "modules":{ "left": ["launcher", "workspaces", "clipboard", "terminal"],
-                    "center": ["clock", "swaync"],
-                    "right": ["updates", "battery", "powerprofile", "volume", "systemtray", "logo", "power"] },
+                    "center": ["clock", "swaync", "updates"],
+                    "right": ["battery", "powerprofile", "volume", "systemtray", "logo", "power"] },
         "border": { "width": 2, "colorTop": "", "colorBottom": "" },
         "opacity":{ "collapsed": 0.6, "expanded": 0.8 },
         "clock":  { "format": "HH:mm:ss", "dateFormat": "ddd, dd MMM", "calendarCommand": "" },
@@ -1217,13 +1217,19 @@ PanelWindow {
         onActionRequested: identifier => root.runUpdateAction(identifier)
         onCloseRequested: root.updateCenterOpen = false
 
-        // Hang below the bar, centred on the update icon (the first module in
-        // the right area) and clamped so the card always stays on screen.
+        // Hang below the bar, centred on the update icon (wherever it is
+        // placed) and clamped so the card always stays on screen.
         x: {
             if (!root.updatesRef)
                 return Math.round(root.width - width - 8)
             let host = root.updatesRef.parent
-            let iconCenter = pill.x + rightArea.x + (host ? host.x : 0)
+            // host.parent is the RowLayout holding the module (left, centre or
+            // right); sum those offsets explicitly because mapToItem on the
+            // layer-shell window can report 0,0.
+            let area = host ? host.parent : null
+            let areaX = area === leftArea ? leftArea.x
+                : area === centerArea ? centerArea.x : rightArea.x
+            let iconCenter = pill.x + areaX + (host ? host.x : 0)
                 + root.updatesRef.x + root.updatesRef.width / 2
             return Math.round(Math.max(8,
                 Math.min(root.width - width - 8, iconCenter - width / 2)))
