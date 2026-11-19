@@ -33,8 +33,8 @@ The dock (ml4w-dock) follows the same file through its theme.opacityFile.
         "animationDuration": 350
     },
     "modules": {
-        "left":   ["terminal", "workspaces", "clipboard"],
-        "center": ["launcher", "clock", "swaync"],
+        "left":   ["launcher", "workspaces", "clipboard", "terminal"],
+        "center": ["clock", "swaync"],
         "right":  ["updates", "battery", "powerprofile", "volume", "systemtray", "logo", "power"]
     },
     "border": {
