@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Services.SystemTray
 import QtQuick
+import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import qs.CustomTheme
 
@@ -11,12 +12,12 @@ Rectangle {
     // Draws the chip (the rounded plate behind the icons). Supplied from
     // config.json.
     //
-    // Tray icons are handed over by the applications themselves — either as a
-    // themed icon name or as a raw pixmap over D-Bus — so the bar cannot
-    // recolor them and no icon theme covers all of them. Most are drawn for a
-    // dark panel and become unreadable once matugen flips the pill background
-    // to a light palette. The chip restores the dark substrate they expect,
-    // under every icon, whatever its source.
+    // Tray icons come from the applications themselves — either as a themed
+    // icon name or as a raw pixmap over D-Bus — and their own colours rarely
+    // match the bar. A flat colour overlay below paints every icon in exactly
+    // the accent used by the other bar buttons. In a light palette the chip is
+    // painted in the accent, so the icons switch to the background colour to
+    // stay legible on it.
     property bool chip: true
 
     // Padding between the icon row and the chip edge. Held at the same value in
@@ -40,6 +41,11 @@ Rectangle {
     // collapse) and the menu would be dismissed the instant it opened.
     property int openMenuCount: 0
     readonly property bool menuOpen: openMenuCount > 0
+
+    // Icons use the bar's accent, except on a light chip where the accent is
+    // the chip itself — there they must use the background colour to read.
+    readonly property color iconAccent: (chip && Theme.isLight) ? Theme.background : Theme.primary
+    readonly property color hoverIconAccent: (chip && Theme.isLight) ? Theme.primary : Theme.background
 
     implicitWidth: items.implicitWidth + 2 * padH
     implicitHeight: items.implicitHeight + 2 * padV
@@ -76,19 +82,16 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                // Hover highlight behind the icon, tinted with the accent so it
-                // reads like the other bar buttons while keeping the original
-                // tray icon colours legible.
+                // Same solid accent circle on hover as every other bar button
+                // (not a translucent tint, which read as a lighter shade).
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 28
-                    height: 28
-                    radius: 14
-                    color: trayItem.containsMouse
-                        ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
-                        : "transparent"
+                    width: 30
+                    height: 30
+                    radius: 15
+                    color: trayItem.containsMouse ? tray.iconAccent : "transparent"
                     Behavior on color {
-                        ColorAnimation { duration: 200 }
+                        ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
                     }
                 }
 
@@ -100,6 +103,22 @@ Rectangle {
                     sourceSize.width: 18
                     sourceSize.height: 18
                     fillMode: Image.PreserveAspectFit
+
+                    // Recolor every tray icon — themed or raw pixmap — to the
+                    // same shade as the bar's other icons. On hover the icon
+                    // flips to the contrast colour over the accent circle.
+                    layer.enabled: true
+                    layer.effect: ColorOverlay {
+                        // A flat overlay (rather than colorization) replaces
+                        // the source colour entirely, so the icons land on
+                        // exactly the same shade as the SVG bar icons instead
+                        // of a lighter tint of their original pixels.
+                        color: trayItem.containsMouse
+                            ? tray.hoverIconAccent : tray.iconAccent
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
                 }
 
                 onClicked: (mouse) => {
