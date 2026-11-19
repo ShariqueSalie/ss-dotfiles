@@ -347,19 +347,26 @@ FloatingWindow {
                     spacing: 5
                     Layout.topMargin: 20
 
-                    Image {
+                    Rectangle {
                         Layout.alignment: Qt.AlignHCenter
-                        source: "../shared/ml4w.svg"
-                        sourceSize.width: 100 
-                        sourceSize.height: 100
                         width: 100
                         height: 100
-                        fillMode: Image.PreserveAspectFit
+                        radius: 24
+                        color: Theme.primary
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "ss."
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 52
+                            font.bold: true
+                            color: Theme.background
+                        }
                     }
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "Welcome to ML4W OS"
+                        text: "Welcome S@LI3 OS"
                         font.family: Theme.fontFamily
                         font.pixelSize: 28
                         font.bold: true
