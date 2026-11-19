@@ -1,0 +1,14 @@
+{
+    "clock": {
+        "format": "HH:mm:ss",
+        "dateFormat": "ddd, dd MMM",
+        "calendarCommand": ""
+    },
+    "bar": {
+        "topGap": 0
+    },
+    "pill": {
+        "fullWidth": true,
+        "radius": 0
+    }
+}
