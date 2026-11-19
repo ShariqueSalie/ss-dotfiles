@@ -11,6 +11,12 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
 #
+# Options:
+#   --no-greeter   keep the existing login screen (no LightDM install)
+#   --no-gaming    skip the Fedora gaming packages
+#   --enable-fedora-gaming-repos
+#                  approve RPM Fusion nonfree + the Gamescope COPR without asking
+#
 # Environment:
 #   MANIFEST_URL   manifest to install (default: this fork's rolling manifest)
 #   INSTALLER_TAG  ml4w-dotfiles-installer tag (default: 0.3.1)
@@ -20,10 +26,25 @@ set -euo pipefail
 MANIFEST_URL="${MANIFEST_URL:-https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/hyprland-dotfiles.dotinst}"
 INSTALLER_URL="https://github.com/mylinuxforwork/ml4w-dotfiles-installer.git"
 INSTALLER_TAG="${INSTALLER_TAG:-0.3.1}"
+GAMING_URL="${GAMING_URL:-https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-gaming.sh}"
+
+INSTALL_GAMING=true
+GAMING_REPOS=false
 
 say() { printf '\033[1;34m[dotfiles]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[dotfiles]\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31m[dotfiles]\033[0m %s\n' "$*" >&2; exit 1; }
+
+while (($# > 0)); do
+    case "$1" in
+        --no-greeter) export ML4W_NO_GREETER=1 ;;
+        --no-gaming) INSTALL_GAMING=false ;;
+        --enable-fedora-gaming-repos) GAMING_REPOS=true ;;
+        -h|--help) sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) die "unknown option: $1" ;;
+    esac
+    shift
+done
 
 if [[ -z "${WAYLAND_DISPLAY:-}" && -z "${DISPLAY:-}" ]]; then
     warn "No graphical session detected."
@@ -65,5 +86,17 @@ command -v ml4w-dotfiles-installer >/dev/null ||
 # --- install this fork --------------------------------------------------
 say "installing ShariqueSalie/dotfiles from $MANIFEST_URL"
 ml4w-dotfiles-installer --install "$MANIFEST_URL"
+
+# --- Fedora gaming packages (the dwm-s gaming profile) -----------------
+if $INSTALL_GAMING && [[ -f /etc/fedora-release ]] && [[ "$(uname -m)" == x86_64 ]]; then
+    say "installing Fedora gaming packages (dwm-s profile)"
+    gaming_args=()
+    $GAMING_REPOS && gaming_args+=(--enable-repos)
+    curl -fsSL "$GAMING_URL" -o "$TEMP_DIR/install-gaming.sh"
+    bash "$TEMP_DIR/install-gaming.sh" "${gaming_args[@]}" ||
+        warn "gaming packages were skipped or some were unavailable"
+elif $INSTALL_GAMING; then
+    say "gaming packages are Fedora x86_64 only; skipping"
+fi
 
 say "done. Log out and back in to start the new desktop."

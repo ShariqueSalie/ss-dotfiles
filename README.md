@@ -53,6 +53,48 @@ curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/i
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
 ```
 
+#### Login screen
+
+The desktop install also sets up the dwm-s login screen: LightDM with
+slick-greeter, the Nord wallpaper, a centred login panel and the MesloLGS
+Nerd Font. It defaults to the Hyprland session, disables other display
+managers (GDM, SDDM, ...) and enables `lightdm`.
+
+The wallpaper, greeter config and font files are all kept in
+`setup/greeter/`, so nothing is downloaded at login.
+
+```sh
+# keep the existing login screen
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --no-greeter
+
+# or run only the greeter later
+bash setup/install-greeter.sh --dry-run
+bash setup/install-greeter.sh
+```
+
+#### Fedora gaming
+
+On Fedora x86_64 the desktop install also mirrors the gaming part of
+dwm-s: Steam, Gamescope, GameMode and MangoHud (64- and 32-bit) plus
+GameMode tuning access. It enables RPM Fusion nonfree and, before
+Fedora 45, the `christitustech/copr-fedora` Gamescope COPR.
+
+Third-party repositories are only enabled after you approve them. When
+the installer runs non-interactively, pass the flag:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --enable-fedora-gaming-repos
+```
+
+```sh
+# skip gaming
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --no-gaming
+
+# or run it separately
+bash setup/install-gaming.sh --dry-run
+bash setup/install-gaming.sh --enable-repos
+```
+
 ### Test and install with the ML4W OS Live ISO
 
 Test the ML4W OS without risk on your computer or in a Virtual Machine with the ML4W Live ISO.
