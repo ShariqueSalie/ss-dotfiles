@@ -78,23 +78,3 @@ bash setup/install-gaming.sh --enable-repos
 
 I want to say thank you to ML4W OS and all other Developers who are creating awesome configurations for our favorite Tiling Window Manager Hyprland. Your support, the testing of every version and all your valuable Pull Requests with improvements and bug fixes have repeatedly improved the overall project and increased its relevance and quality.
 
-Special Thanks do to...
-
-https://github.com/Affanmm for the great and professional ML4W Logo Design and much more.
-https://github.com/harilvfs for supporting me in creating the new Wiki https://ml4w.com/os/
-https://github.com/dwilliam62 for all your support and testings since the start of the Project
-and so many more...
-
-<img width="2560" height="1440" alt="image" src="https://ml4w.com/os/screen-217-2.jpg" />
-
-## Inspirations
-
-The following projects have inspired me:
-
-- https://github.com/JaKooLit/Hyprland-Dots
-- https://github.com/prasanthrangan/hyprdots
-- https://github.com/sudo-harun/dotfiles
-- https://github.com/dianaw353/hyprland-configuration-rootfs
-- https://www.youtube.com/@saneAspect
-
-and many more...
