@@ -22,5 +22,13 @@ ShellRoot {
     SidebarWindow {}
     WallpaperWindow {}
     WallpaperCarousel {}
-    StatusbarWindow {}
+    // One status bar per connected monitor.
+    Variants {
+        model: Quickshell.screens
+        StatusbarWindow {
+            property var modelData
+            screen: modelData
+            primaryBar: modelData.name === "eDP-1"
+        }
+    }
 }

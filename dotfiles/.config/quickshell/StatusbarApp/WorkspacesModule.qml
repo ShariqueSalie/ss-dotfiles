@@ -8,10 +8,10 @@ RowLayout {
     id: wsRoot
     spacing: 6
 
-    // Minimum number of workspaces to always display, even when empty. The list
-    // still grows beyond this to reveal any higher-numbered workspace that
-    // exists (e.g. switching to workspace 6 while this is 5 adds a 6th dot).
+    // Number of workspaces this bar displays, and the first one in its range.
+    // The primary bar shows 1-5; bars on secondary monitors show 6-10.
     property int minWorkspaces: 5
+    property int workspaceStart: 1
 
     // The individual workspace buttons, exposed so StatusbarWindow can splice
     // them into its keyboard-navigation list. Rebuilt whenever workspaces are
@@ -25,16 +25,11 @@ RowLayout {
         wsRoot.navButtons = a
     }
 
-    // The workspace ids to render: 1..N, where N is at least minWorkspaces and
-    // extends to cover the highest-numbered workspace that currently exists.
+    // Only the workspaces assigned to this bar's monitor are rendered.
     readonly property var workspaceIds: {
-        let maxId = Math.max(1, wsRoot.minWorkspaces)
-        const list = Hyprland.workspaces.values
-        for (let i = 0; i < list.length; i++)
-            if (list[i].id > maxId)
-                maxId = list[i].id
         let ids = []
-        for (let id = 1; id <= maxId; id++)
+        for (let id = wsRoot.workspaceStart;
+             id < wsRoot.workspaceStart + wsRoot.minWorkspaces; id++)
             ids.push(id)
         return ids
     }

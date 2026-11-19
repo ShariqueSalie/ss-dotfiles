@@ -132,8 +132,13 @@ Rectangle {
         onTriggered: clipboard.refresh()
     }
 
+    // Only the primary bar owns this IPC target when the bar is duplicated
+    // across monitors.
+    property bool primaryBar: true
+
     // `qs ipc call clipboard refresh` recounts on demand.
     IpcHandler {
+        enabled: primaryBar
         target: "clipboard"
         function refresh(): void { clipboard.refresh() }
     }

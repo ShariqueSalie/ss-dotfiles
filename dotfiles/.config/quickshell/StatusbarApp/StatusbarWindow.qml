@@ -11,6 +11,10 @@ import qs.CustomTheme
 PanelWindow {
     id: root
 
+    // Only the primary instance owns the IPC handlers and keyboard grab, so
+    // duplicating this window across monitors does not create duplicate targets.
+    property bool primaryBar: true
+
     // --- WAYLAND CONFIGURATION ---
     WlrLayershell.layer: WlrLayer.Top
     // Keyboard focus is owned by the HyprlandFocusGrab below (the same primitive
@@ -32,8 +36,8 @@ PanelWindow {
     // normally, while a click in another window clears it and closes both.
     HyprlandFocusGrab {
         windows: [root]
-        active: root.barExpanded || root.calendarOpen || root.audioMenuOpen
-            || root.updateCenterOpen
+        active: root.primaryBar && (root.barExpanded || root.calendarOpen || root.audioMenuOpen
+            || root.updateCenterOpen)
         onCleared: {
             root.calendarOpen = false
             root.updateCenterOpen = false
@@ -354,6 +358,7 @@ PanelWindow {
         id: cWorkspaces
         WorkspacesModule {
             minWorkspaces: root.settings.workspaces.count
+            workspaceStart: root.primaryBar ? 1 : 6
         }
     }
     Component { id: cLauncher;   LauncherModule {} }
@@ -683,7 +688,8 @@ PanelWindow {
     function applyFocus(): void {
         let items = root.navItems
         for (let i = 0; i < items.length; i++)
-            items[i].focused = (i === root.focusIndex)
+            if (items[i])
+                items[i].focused = (i === root.focusIndex)
     }
 
     onFocusIndexChanged: applyFocus()
@@ -743,6 +749,7 @@ PanelWindow {
     // existing callers keep working: the SUPER + CTRL + C keybinding, the
     // waybar clock's on-click and the ml4w-calendar shell alias.
     IpcHandler {
+        enabled: root.primaryBar
         target: "calendar"
         function toggle(): void { root.calendarOpen = !root.calendarOpen }
         function open(): void { root.calendarOpen = true }
@@ -751,6 +758,7 @@ PanelWindow {
     }
 
     IpcHandler {
+        enabled: root.primaryBar
         target: "statusbar"
         function toggle(): void { root.setEnabled(!root.settings.bar.enabled) }
         // Named enable/disable rather than show/hide: "show" is a reserved
@@ -789,6 +797,7 @@ PanelWindow {
     // every provider (the refresh button, ml4w-install-system-updates and
     // "qs ipc call updates refresh"); `reset` clears the badge immediately.
     IpcHandler {
+        enabled: root.primaryBar
         target: "updates"
         function refresh(): void { root.refreshUpdateCenter(true) }
         function toggle(): void { root.toggleUpdateCenter() }
@@ -1111,7 +1120,11 @@ PanelWindow {
                 Loader {
                     Layout.alignment: Qt.AlignVCenter
                     sourceComponent: root.moduleComponents[modelData] || null
-                    onLoaded: Qt.callLater(root.rebuildNavItems)
+                    onLoaded: {
+                        if (item && item.primaryBar !== undefined)
+                            item.primaryBar = root.primaryBar
+                        Qt.callLater(root.rebuildNavItems)
+                    }
                 }
             }
         }
@@ -1130,7 +1143,11 @@ PanelWindow {
                 Loader {
                     Layout.alignment: Qt.AlignVCenter
                     sourceComponent: root.moduleComponents[modelData] || null
-                    onLoaded: Qt.callLater(root.rebuildNavItems)
+                    onLoaded: {
+                        if (item && item.primaryBar !== undefined)
+                            item.primaryBar = root.primaryBar
+                        Qt.callLater(root.rebuildNavItems)
+                    }
                 }
             }
         }
@@ -1166,7 +1183,11 @@ PanelWindow {
                     // that would pin this Loader hidden once the right area
                     // collapses in the pill's collapsed state.
                     visible: (item && item.collapsed !== undefined) ? !item.collapsed : true
-                    onLoaded: Qt.callLater(root.rebuildNavItems)
+                    onLoaded: {
+                        if (item && item.primaryBar !== undefined)
+                            item.primaryBar = root.primaryBar
+                        Qt.callLater(root.rebuildNavItems)
+                    }
                 }
             }
         }
