@@ -84,6 +84,27 @@ if command -v bluetoothctl >/dev/null 2>&1; then
 fi
 
 # --------------------------------------------------------------
+# Default web browser
+# --------------------------------------------------------------
+
+# Fedora installs Brave Origin (setup/packages/packages-fedora). Register it
+# as the default handler so links from other apps open it too, not just
+# SUPER+B. Skipped when Brave is not installed, so distributions that keep
+# Firefox and machines where the user removed Brave are left alone.
+if [ -f /usr/share/applications/brave-origin.desktop ]; then
+    if command -v xdg-settings >/dev/null 2>&1; then
+        xdg-settings set default-web-browser brave-origin.desktop >/dev/null 2>&1 ||
+            echo "warning: could not set Brave Origin as the default browser" >&2
+    fi
+    if command -v xdg-mime >/dev/null 2>&1; then
+        xdg-mime default brave-origin.desktop \
+            x-scheme-handler/http x-scheme-handler/https \
+            x-scheme-handler/about x-scheme-handler/unknown text/html \
+            >/dev/null 2>&1 || true
+    fi
+fi
+
+# --------------------------------------------------------------
 # Create XDG Directories
 # --------------------------------------------------------------
 

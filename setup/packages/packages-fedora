@@ -1,0 +1,3 @@
+# Default web browser on Fedora: Brave Origin, installed from the Brave RPM
+# repository that setup/preflight-fedora.sh adds.
+brave-origin

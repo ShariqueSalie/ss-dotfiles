@@ -12,6 +12,23 @@ Graphical desktop (Fedora):
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
 ```
 
+### Default browser
+
+On Fedora the install adds Brave's RPM repository and installs **Brave
+Origin**, then registers it as the default browser for `http`, `https`,
+`about` and `text/html` links. `SUPER+B`, the bar's browser button, the
+quicklinks and links from other apps all open it.
+
+```sh
+# check or change it later
+xdg-settings get default-web-browser
+xdg-settings set default-web-browser brave-origin.desktop
+```
+
+The other distributions keep Firefox. `~/.config/ml4w/settings/browser.sh`
+resolves whichever browser is installed, so it also works after swapping the
+default.
+
 ### Server install
 
 Headless server (CLI only: bash aliases, prompt, fastfetch banner, btop,
