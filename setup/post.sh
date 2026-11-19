@@ -72,3 +72,12 @@ source $repo_path/setup/_powerkey.sh
 # --------------------------------------------------------------
 
 xdg-user-dirs-update
+
+# --------------------------------------------------------------
+# Login screen (dwm-s LightDM + slick-greeter)
+# --------------------------------------------------------------
+
+if [[ "${ML4W_NO_GREETER:-0}" != "1" ]]; then
+    bash "$repo_path/setup/install-greeter.sh" ||
+        echo "warning: the LightDM greeter install failed; the desktop is still installed" >&2
+fi
