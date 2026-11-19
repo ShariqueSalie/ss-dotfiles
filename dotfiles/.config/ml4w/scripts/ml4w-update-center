@@ -256,7 +256,7 @@ def git(repo, *arguments, timeout=30):
 
 
 def scan_dotfiles():
-    identifier, name, icon = "dotfiles", "Dotfiles (GitHub)", "git.svg"
+    identifier, name, icon = "dotfiles", "SS_Link", "git.svg"
     repo = find_repo()
     if repo is None:
         return provider(identifier, name, icon, "git",
