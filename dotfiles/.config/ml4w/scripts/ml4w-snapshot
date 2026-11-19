@@ -19,23 +19,13 @@ else
 fi
 
 # --- OS Detection & Package Manager Setup ---
-if command -v pacman &> /dev/null; then
-    OS="Arch"
-    PKG_INST="pacman -S"
-    CHECK_CMD="pacman -Qs"
-    GRUB_CFG="/boot/grub/grub.cfg"
-elif command -v dnf &> /dev/null; then
+if command -v dnf &> /dev/null; then
     OS="Fedora"
     PKG_INST="sudo dnf install"
     CHECK_CMD="rpm -q"
     GRUB_CFG="/boot/grub2/grub.cfg"
-elif command -v zypper &> /dev/null; then
-    OS="openSUSE"
-    PKG_INST="sudo zypper install"
-    CHECK_CMD="zypper se -i"
-    GRUB_CFG="/boot/grub2/grub.cfg"
 else
-    echo "ERROR: Unsupported Distribution (No pacman, dnf, or zypper found)."
+    echo "ERROR: Unsupported Distribution (dnf not found)."
     exit 1
 fi
 

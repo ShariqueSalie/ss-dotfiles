@@ -34,51 +34,9 @@ threshhold_red=100
 # Check for updates
 # ----------------------------------------------------- 
 
-# Arch
-if _checkCommandExists "pacman"; then
-
-    check_lock_files() {
-        local pacman_lock="/var/lib/pacman/db.lck"
-        local checkup_lock="${TMPDIR:-/tmp}/checkup-db-${UID}/db.lck"
-
-        while [ -f "$pacman_lock" ] || [ -f "$checkup_lock" ]; do
-            sleep 1
-        done
-    }
-
-    check_lock_files
-
-    yay_installed="false"
-    paru_installed="false"
-    updates_aur=0
-
-    if _checkCommandExists "yay"; then
-        yay_installed="true"
-    fi
-    if _checkCommandExists "paru"; then
-        paru_installed="true"
-    fi
-    if [[ $yay_installed == "true" ]] && [[ $paru_installed == "false" ]]; then
-        aur_helper="yay"
-    elif [[ $yay_installed == "false" ]] && [[ $paru_installed == "true" ]]; then
-        aur_helper="paru"
-    fi
-    if [[ $yay_installed == "true" ]] || [[ $paru_installed == "true" ]]; then
-        updates_aur=$($aur_helper -Qum | wc -l)
-    fi
-    updates_pacman=$(checkupdates | wc -l)
-    updates=$((updates_pacman+updates_aur))
-    
 # Fedora
-elif _checkCommandExists "dnf"; then
+if _checkCommandExists "dnf"; then
     updates=$(dnf check-update -q | grep -c ^[a-z0-9])
-# openSUSE
-elif _checkCommandExists "zypper"; then
-    updates=$(zypper --non-interactive --quiet list-updates 2>/dev/null | grep -c "^v ")
-# Ubuntu
-elif _checkCommandExists "apt"; then
-    updates=$(apt list --upgradable 2>/dev/null | grep -c "/")
-# Others
 else
     updates=0
 fi

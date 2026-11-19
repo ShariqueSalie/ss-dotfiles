@@ -95,71 +95,28 @@ def plural(count, singular, plural_form=None):
 
 def scan_system():
     identifier, name, icon = "system", "Fedora packages", "fedora.svg"
-    managers = [
-        ("pacman", "Arch Linux packages"),
-        ("dnf", "Fedora packages"),
-        ("zypper", "openSUSE packages"),
-        ("apt", "Debian packages"),
-    ]
-    manager = next(((cmd, label) for cmd, label in managers if shutil.which(cmd)), None)
-    if manager is None:
-        return provider(identifier, "System packages", icon, "system",
-                        "No supported package manager found", status="unavailable")
-
-    command, label = manager
+    label = name
     items = []
 
-    if command == "pacman":
-        code, out, err = run(["pacman", "-Qu"], 180)
-        if code != 0:
-            return provider(identifier, label, icon, "system", "Could not check for updates",
-                            status="error", detail=(err or out).strip()[:400])
-        for line in out.splitlines():
-            parts = line.split()
-            if len(parts) >= 4:
-                items.append({"name": parts[0], "from": parts[1], "to": parts[3]})
+    if not shutil.which("dnf"):
+        return provider(identifier, name, icon, "system",
+                        "dnf not found", status="unavailable")
 
-    elif command == "dnf":
-        code, out, err = run([shutil.which("dnf"), "-q", "check-update"], 240)
-        if code not in (0, 100):
-            message = (err or out).strip().splitlines()
-            return provider(identifier, label, icon, "system", "Could not check for updates",
-                            status="error", detail=message[0][:400] if message else "")
-        for line in out.splitlines():
-            line = line.rstrip()
-            if not line or line[0].isspace() or line.startswith(("Last metadata", "Name")):
-                continue
-            parts = line.split()
-            # dnf4: "name.arch  version  repo"; dnf5 table: "name arch version repo ..."
-            if len(parts) >= 4 and re.match(r"^(x86_64|i[3-6]86|aarch64|armv7hl|noarch|ppc64le|s390x)$", parts[1]):
-                items.append({"name": parts[0], "from": "", "to": parts[2]})
-            elif len(parts) >= 3 and "." in parts[0]:
-                items.append({"name": parts[0].rsplit(".", 1)[0], "from": "", "to": parts[1]})
-
-    elif command == "zypper":
-        code, out, err = run(["zypper", "--non-interactive", "--quiet", "list-updates"], 180)
-        if code != 0:
-            return provider(identifier, label, icon, "system", "Could not check for updates",
-                            status="error", detail=(err or out).strip()[:400])
-        for line in out.splitlines():
-            parts = line.split()
-            if len(parts) >= 5 and parts[0] == "v":
-                items.append({"name": parts[2], "from": parts[3], "to": parts[4]})
-
-    else:
-        code, out, err = run(["apt", "list", "--upgradable"], 180)
-        if code != 0:
-            return provider(identifier, label, icon, "system", "Could not check for updates",
-                            status="error", detail=(err or out).strip()[:400])
-        for line in out.splitlines():
-            if "/" not in line or line.startswith("Listing"):
-                continue
-            name = line.split("/", 1)[0]
-            new = ""
-            match = re.search(r"\s(\S+)\s+\S+\s+\[upgradable from:", line)
-            if match:
-                new = match.group(1)
-            items.append({"name": name, "from": "", "to": new})
+    code, out, err = run([shutil.which("dnf"), "-q", "check-update"], 240)
+    if code not in (0, 100):
+        message = (err or out).strip().splitlines()
+        return provider(identifier, label, icon, "system", "Could not check for updates",
+                        status="error", detail=message[0][:400] if message else "")
+    for line in out.splitlines():
+        line = line.rstrip()
+        if not line or line[0].isspace() or line.startswith(("Last metadata", "Name")):
+            continue
+        parts = line.split()
+        # dnf4: "name.arch  version  repo"; dnf5 table: "name arch version repo ..."
+        if len(parts) >= 4 and re.match(r"^(x86_64|i[3-6]86|aarch64|armv7hl|noarch|ppc64le|s390x)$", parts[1]):
+            items.append({"name": parts[0], "from": "", "to": parts[2]})
+        elif len(parts) >= 3 and "." in parts[0]:
+            items.append({"name": parts[0].rsplit(".", 1)[0], "from": "", "to": parts[1]})
 
     seen = set()
     unique = []
