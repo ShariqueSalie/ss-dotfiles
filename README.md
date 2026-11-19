@@ -93,5 +93,5 @@ bash setup/install-gaming.sh --enable-repos
 
 ## Special Thanks
 
-I want to say thank you to ML4W OS and all other Developers who are creating awesome configurations for our favorite Tiling Window Manager Hyprland. Your support, the testing of every version and all your valuable Pull Requests with improvements and bug fixes have repeatedly improved the overall project and increased its relevance and quality.
+I want to say thank you to ML4W OS and all other Developers who are creating awesome configurations for our favorite Tiling Window Manager Hyprland.
 
