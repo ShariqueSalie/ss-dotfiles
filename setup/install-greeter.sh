@@ -6,8 +6,9 @@
 # configuration as github.com/ShariqueSalie/dwm-s: the Nord wallpaper,
 # a centred login panel, the MesloLGS Nerd Font and a clock.
 #
-# Everything it needs lives in setup/greeter/, so the install is
-# self-contained and works offline once the packages are present.
+# Everything it needs lives in setup/lightdm/ (the dwm-s folder, plus the
+# MesloLGS fonts), so the install is self-contained and works offline once
+# the packages are present.
 #
 # Run by setup/post.sh during a desktop install, or by hand:
 #
@@ -22,7 +23,7 @@
 # ------------------------------------------------------------
 set -euo pipefail
 
-GREETER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/greeter"
+GREETER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lightdm"
 FONT_DIR="$GREETER_DIR/fonts"
 
 DRY_RUN=false
@@ -114,7 +115,7 @@ install_packages() {
 }
 
 # --- MesloLGS NF, system-wide so the greeter user can use it ------------
-# The TTFs are bundled in setup/greeter/fonts; no download needed.
+# The TTFs are bundled in setup/lightdm/fonts; no download needed.
 install_fonts() {
     [[ -d "$FONT_DIR" ]] || die "missing font directory: $FONT_DIR"
     if find /usr/share/fonts /usr/local/share/fonts -iname 'MesloLGS*NerdFont*' 2>/dev/null |
@@ -138,7 +139,7 @@ install_config() {
     fi
     if [[ -e "$dst" ]]; then
         say "backing up $dst"
-        run $SUDO cp -a "$dst" "$dst.$(date +%Y%m%d%H%M%S).bak"
+        run $SUDO cp -a "$dst" "$dst.dwm-s.$(date +%Y%m%d%H%M%S).bak"
     fi
     say "installing $dst"
     run $SUDO install -Dm"$mode" "$src" "$dst"
@@ -169,7 +170,8 @@ main() {
         die "missing $GREETER_DIR/wallpaper.jpg"
 
     # The dwm-s setup: [Seat:*] with the Fedora greeter name, no session
-    # wrapper, and logind-check-graphical enabled.
+    # wrapper, and logind-check-graphical enabled. This renders the same
+    # output as 'make print-config' in setup/lightdm/Makefile.
     LIGHTDM_CONF=$(mktemp -t lightdm-conf-XXXXXX)
     {
         printf '[LightDM]\n'

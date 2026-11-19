@@ -61,7 +61,8 @@ Nerd Font. It defaults to the Hyprland session, disables other display
 managers (GDM, SDDM, ...) and enables `lightdm`.
 
 The wallpaper, greeter config and font files are all kept in
-`setup/greeter/`, so nothing is downloaded at login.
+`setup/lightdm/` (the same folder as dwm-s), so nothing is downloaded at
+login.
 
 ```sh
 # keep the existing login screen
