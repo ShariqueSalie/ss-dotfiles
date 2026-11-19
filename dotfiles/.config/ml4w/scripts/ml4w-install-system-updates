@@ -37,20 +37,40 @@ _isInstalled() {
 
 sleep 1
 clear
-figlet -f smslant "Updates"
+if command -v figlet &> /dev/null; then
+    figlet -f smslant "Updates"
+fi
 echo
 primarycolor=$(cat ~/.config/ml4w/colors/primary)
 onsurfacecolor=$(cat ~/.config/ml4w/colors/onsurface)
 onprimarycolor=$(cat ~/.config/ml4w/colors/onprimary)
-if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "DO YOU WANT TO START THE UPDATE NOW?"; then
-    echo
-    echo ":: Update started..."
-elif [ $? -eq 130 ]; then
-    exit 130
+if _checkCommandExists "gum"; then
+    if gum confirm --selected.background=$primarycolor --selected.foreground=$onprimarycolor --prompt.foreground=$onsurfacecolor "DO YOU WANT TO START THE UPDATE NOW?"; then
+        echo
+        echo ":: Update started..."
+    elif [ $? -eq 130 ]; then
+        exit 130
+    else
+        echo
+        echo ":: Update canceled."
+        exit
+    fi
 else
-    echo
-    echo ":: Update canceled."
-    exit
+    # Keep the updater usable when gum is missing (e.g. a fresh install
+    # before the dependency list is applied).
+    echo ":: gum is not installed; falling back to a plain prompt."
+    read -r -p "DO YOU WANT TO START THE UPDATE NOW? [y/N] " answer
+    case "$answer" in
+        [yY]|[yY][eE][sS])
+            echo
+            echo ":: Update started..."
+            ;;
+        *)
+            echo
+            echo ":: Update canceled."
+            exit
+            ;;
+    esac
 fi
 
 # ----------------------------------------------------- 
