@@ -23,6 +23,14 @@ Item {
 
     // Snapshot from StatusbarWindow.
     property var providers: []
+    // Make the dnf maintenance buttons (below the provider rows) available
+    // only when the system provider is the Fedora one.
+    readonly property bool dnfAvailable: {
+        for (let i = 0; i < panel.providers.length; i++)
+            if (panel.providers[i].id === "system")
+                return panel.providers[i].name === "Fedora packages"
+        return false
+    }
     property bool scanning: false
     property string error: ""
     property double checked: 0
@@ -410,6 +418,27 @@ Item {
                             }
                         }
                     }
+                }
+            }
+
+            // Fedora maintenance, below the provider rows (Dotfiles is last).
+            // Both run in a terminal: dnf asks for its own confirmation and
+            // sudo needs a TTY.
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                visible: panel.dnfAvailable
+
+                MiniButton {
+                    Layout.fillWidth: true
+                    label: "Distro Sync"
+                    onClicked: panel.actionRequested("dnf-distro-sync")
+                }
+
+                MiniButton {
+                    Layout.fillWidth: true
+                    label: "Upgrade (Refresh)"
+                    onClicked: panel.actionRequested("dnf-upgrade-refresh")
                 }
             }
         }

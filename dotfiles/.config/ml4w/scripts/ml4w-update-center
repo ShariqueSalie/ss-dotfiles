@@ -11,6 +11,10 @@
 #   ml4w-update-center snapshot [--force]   print the provider snapshot as JSON
 #   ml4w-update-center update <provider>    run that provider's update in a terminal
 #
+# Besides the providers, the Update Center's Fedora maintenance buttons call
+# "update dnf-distro-sync" (sudo dnf distro-sync) and "update
+# dnf-upgrade-refresh" (sudo dnf upgrade --refresh).
+#
 # Providers (in display order):
 #
 #   system    package manager upgrades (dnf / dnf5 on Fedora, and the other
@@ -376,6 +380,24 @@ def launch_update(identifier):
             return False
         return run_in_terminal(
             "cd " + shlex.quote(repo) + " && git pull --ff-only;"
+            " qs ipc call updates refresh >/dev/null 2>&1;"
+            " echo; read -n 1 -s -r -p 'Press any key to close...'")
+
+    # Fedora maintenance buttons shown below the provider rows. dnf prompts
+    # for its own confirmation (no -y) and needs a TTY for sudo.
+    if identifier == "dnf-distro-sync":
+        if not shutil.which("dnf"):
+            return False
+        return run_in_terminal(
+            "sudo dnf distro-sync;"
+            " qs ipc call updates refresh >/dev/null 2>&1;"
+            " echo; read -n 1 -s -r -p 'Press any key to close...'")
+
+    if identifier == "dnf-upgrade-refresh":
+        if not shutil.which("dnf"):
+            return False
+        return run_in_terminal(
+            "sudo dnf upgrade --refresh;"
             " qs ipc call updates refresh >/dev/null 2>&1;"
             " echo; read -n 1 -s -r -p 'Press any key to close...'")
 
