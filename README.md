@@ -6,35 +6,23 @@ Full featured desktop environment based on the dynamic tiling window manager Hyp
 
 <img width="2560" height="1440" alt="image" src="https://ml4w.com/os/screen-217.jpg" />
 
-## Installation and Documentation
+## Installation
 
-You can find all installation options in the documentation of the ML4W OS for Hyprland here:<br><b>https://ml4w.com/os/</b>
+Copy the command for your machine into a terminal. These install **this
+fork** (ss. branding, the dwm-s status bar, the ss. fastfetch banner and
+more). The upstream commands on [ml4w.com/os](https://ml4w.com/os/) install
+`mylinuxforwork/dotfiles` and do **not** include these changes.
+Arch, Fedora, Ubuntu and openSUSE Tumbleweed are directly supported.
 
-### Quick Installation
-
-Copy one of the following commands into your terminal:
-
-```sh
-bash <(curl -s https://ml4w.com/os/stable) # Stable Release
-```
-
-```sh
-bash <(curl -s https://ml4w.com/os/rolling) # Rolling Release
-```
-Arch, Fedora, Ubuntu and openSuse Tumbleweed are directly supported.
-
-### Install this fork
-
-This fork adds personal customizations on top of ML4W (ss. branding, the
-dwm-s status bar, the ss. fastfetch banner and more). The upstream quick
-commands above clone `mylinuxforwork/dotfiles`, so they do **not** include
-these changes.
+### Desktop install
 
 Graphical desktop (Fedora, Arch, Ubuntu, openSUSE Tumbleweed):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
 ```
+
+### Server install
 
 Headless server (CLI only: bash aliases, prompt, fastfetch banner, btop,
 vim — no Hyprland or quickshell):
@@ -53,7 +41,7 @@ curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/i
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
 ```
 
-#### Login screen
+### Login screen
 
 The desktop install also sets up the dwm-s login screen: LightDM with
 slick-greeter, the Nord wallpaper, a centred login panel and the MesloLGS
@@ -73,7 +61,7 @@ bash setup/install-greeter.sh --dry-run
 bash setup/install-greeter.sh
 ```
 
-#### Fedora gaming
+### Fedora gaming
 
 On Fedora x86_64 the desktop install also mirrors the gaming part of
 dwm-s: Steam, Gamescope, GameMode and MangoHud (64- and 32-bit) plus
