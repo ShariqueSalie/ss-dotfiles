@@ -9,7 +9,7 @@ Full featured desktop environment based on the dynamic tiling window manager Hyp
 Graphical desktop (Fedora):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash
 ```
 
 ### Default browser
@@ -35,17 +35,17 @@ Headless server (CLI only: bash aliases, prompt, fastfetch banner, btop,
 vim — no Hyprland or quickshell):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
 ```
 
 The server install is the right choice for a machine without a display.
 
 ```sh
 # preview without changing anything
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --dry-run
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --dry-run
 
 # skip the package installation
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
 ```
 
 ### Login screen
@@ -61,7 +61,7 @@ login.
 
 ```sh
 # keep the existing login screen
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --no-greeter
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --no-greeter
 
 # or run only the greeter later
 bash setup/install-greeter.sh --dry-run
@@ -79,12 +79,12 @@ Third-party repositories are only enabled after you approve them. When
 the installer runs non-interactively, pass the flag:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --enable-fedora-gaming-repos
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --enable-fedora-gaming-repos
 ```
 
 ```sh
 # skip gaming
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash -s -- --no-gaming
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --no-gaming
 
 # or run it separately
 bash setup/install-gaming.sh --dry-run

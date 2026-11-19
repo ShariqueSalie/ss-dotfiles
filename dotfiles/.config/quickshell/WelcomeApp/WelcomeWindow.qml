@@ -277,11 +277,11 @@ FloatingWindow {
                     }
                 }
                 ML4WMenuItem { text: qsTr("Dotfiles GitHub"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/dotfiles"]) 
+                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/ss-dotfiles"]) 
                     } 
                 }
                 ML4WMenuItem { text: qsTr("Dotfiles Commits"); onClicked: { 
-                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/dotfiles/commits/main"]) 
+                    Quickshell.execDetached(["xdg-open", "https://github.com/ShariqueSalie/ss-dotfiles/commits/main"]) 
                     } 
                 }
                 ML4WMenuItem { text: qsTr("ML4W YouTube Channel"); onClicked: { 

@@ -3,7 +3,7 @@
 # Check for updates
 # ------------------------------------------------------
 #
-# This desktop tracks ShariqueSalie/dotfiles directly through the Update
+# This desktop tracks ShariqueSalie/ss-dotfiles directly through the Update
 # Centre in the status bar (git fetch + commit count), so the old upstream
 # release check against mylinuxforwork/dotfiles is disabled. Always report
 # "no update" so nothing in the old welcome/status widgets nags about it.

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------
-# Headless server install of ShariqueSalie/dotfiles
+# Headless server install of ShariqueSalie/ss-dotfiles
 #
 # Installs only the CLI parts of these dotfiles: the modular bash
 # setup (aliases, prompt, fastfetch banner), btop, vim and the ss.
 # logo used by fastfetch. No Hyprland, no quickshell, no GUI.
 #
-#   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
 #
 # Options:
 #   --dry-run        print what would happen, change nothing
@@ -16,7 +16,7 @@
 # ------------------------------------------------------------
 set -euo pipefail
 
-REPO_URL="https://github.com/ShariqueSalie/dotfiles.git"
+REPO_URL="https://github.com/ShariqueSalie/ss-dotfiles.git"
 REF="main"
 DRY_RUN=false
 INSTALL_PACKAGES=true
@@ -106,7 +106,7 @@ if [[ -z "$REPO_DIR" ]]; then
             command -v curl >/dev/null && command -v tar >/dev/null ||
                 die "git (or curl and tar) is required to download the dotfiles"
             say "downloading $REPO_URL ($REF) as a tarball"
-            curl -fsSL "https://codeload.github.com/ShariqueSalie/dotfiles/tar.gz/refs/heads/$REF" \
+            curl -fsSL "https://codeload.github.com/ShariqueSalie/ss-dotfiles/tar.gz/refs/heads/$REF" \
                 -o "$cleanup_dir/repo.tar.gz"
             tar -xzf "$cleanup_dir/repo.tar.gz" -C "$cleanup_dir"
             REPO_DIR="$cleanup_dir/dotfiles-$REF"

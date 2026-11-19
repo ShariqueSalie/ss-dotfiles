@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------
-# Desktop install of ShariqueSalie/dotfiles
+# Desktop install of ShariqueSalie/ss-dotfiles
 #
 # Installs the official ML4W dotfiles installer and then runs it with
 # this fork's manifest, so the resulting desktop carries the ss.
@@ -9,7 +9,7 @@
 # This needs a graphical Fedora system. For a headless server use
 # setup/install-server.sh instead.
 #
-#   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash
 #
 # Options:
 #   --no-greeter   keep the existing login screen (no LightDM install)
@@ -23,10 +23,10 @@
 # ------------------------------------------------------------
 set -euo pipefail
 
-MANIFEST_URL="${MANIFEST_URL:-https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/hyprland-dotfiles.dotinst}"
+MANIFEST_URL="${MANIFEST_URL:-https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/hyprland-dotfiles.dotinst}"
 INSTALLER_URL="https://github.com/mylinuxforwork/ml4w-dotfiles-installer.git"
 INSTALLER_TAG="${INSTALLER_TAG:-0.3.1}"
-GAMING_URL="${GAMING_URL:-https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-gaming.sh}"
+GAMING_URL="${GAMING_URL:-https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-gaming.sh}"
 
 INSTALL_GAMING=true
 GAMING_REPOS=false
@@ -37,7 +37,7 @@ die() { printf '\033[1;31m[dotfiles]\033[0m %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Desktop install of ShariqueSalie/dotfiles: ML4W Hyprland, the dwm-s
+Desktop install of ShariqueSalie/ss-dotfiles: ML4W Hyprland, the dwm-s
 LightDM login screen and the Fedora gaming packages.
 
 Usage: install-desktop.sh [options]
@@ -69,7 +69,7 @@ done
 if [[ -z "${WAYLAND_DISPLAY:-}" && -z "${DISPLAY:-}" ]]; then
     warn "No graphical session detected."
     warn "These dotfiles are a Hyprland desktop. On a headless server run:"
-    warn "  curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-server.sh | bash"
+    warn "  curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash"
     warn "Continuing in 5 seconds (Ctrl+C to stop)..."
     sleep 5
 fi
@@ -93,7 +93,7 @@ command -v ml4w-dotfiles-installer >/dev/null ||
     die "ml4w-dotfiles-installer is not on PATH ($HOME/.local/bin)"
 
 # --- install this fork --------------------------------------------------
-say "installing ShariqueSalie/dotfiles from $MANIFEST_URL"
+say "installing ShariqueSalie/ss-dotfiles from $MANIFEST_URL"
 
 # The ML4W installer asks "Do you want to proceed with the installation?"
 # through gum, which reads stdin. With the documented curl | bash one-liner
