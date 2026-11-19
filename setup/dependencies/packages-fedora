@@ -21,7 +21,9 @@ ImageMagick
 NetworkManager-tui
 tesseract-langpack-eng
 SwayNotificationCenter
-fontawesome-fonts
+# Fedora 45 split fontawesome-fonts into versioned packages; the meta package
+# pulls in the free + brands fonts the themes reference ("Font Awesome 7 ...").
+fontawesome-fonts-all
 awww
 qt5-qtgraphicaleffects
 qt6-qt5compat
