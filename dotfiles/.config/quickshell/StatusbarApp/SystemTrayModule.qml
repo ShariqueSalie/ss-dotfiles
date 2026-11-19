@@ -76,6 +76,22 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
+                // Hover highlight behind the icon, tinted with the accent so it
+                // reads like the other bar buttons while keeping the original
+                // tray icon colours legible.
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 28
+                    height: 28
+                    radius: 14
+                    color: trayItem.containsMouse
+                        ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
+                        : "transparent"
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
+                    }
+                }
+
                 Image {
                     anchors.centerIn: parent
                     source: trayItem.modelData.icon
