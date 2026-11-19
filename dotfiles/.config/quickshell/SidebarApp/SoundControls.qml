@@ -62,30 +62,25 @@ ColumnLayout {
 
     Process {
         id: soundOutputs
-        // Parse the verbose listing for id, node name and friendly
-        // description ("Built-in Audio Analog Stereo", "WH-1000XM4", ...).
-        command: ["bash", "-c", "pactl list sinks"]
+        // This is a PipeWire-only system (no pactl). List the sinks from
+        // wpctl and emit one "id|node name|description|muted" line each.
+        command: ["bash", "-c",
+            "for id in $(wpctl status | awk '/Sinks:/{f=1;next} /Sources:/{f=0} f && /vol:/{for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+[.]$/) {print $i; break}}'); do "
+            + "id=${id%.}; "
+            + "name=$(wpctl inspect \"$id\" | awk -F'\"' '/node.name =/{print $2; exit}'); "
+            + "desc=$(wpctl inspect \"$id\" | awk -F'\"' '/node.description =/{print $2; exit}'); "
+            + "mute=$(wpctl get-volume \"$id\" | grep -c MUTED); "
+            + "echo \"$id|$name|$desc|$mute\"; done"]
         running: root.isOpen && root.fetchTick
 
         stdout: StdioCollector {
             onStreamFinished: {
                 let next = [];
-                let cur = null;
-                for (let line of this.text.split("\n")) {
-                    if (line.startsWith("Sink #")) {
-                        if (cur) next.push(cur);
-                        cur = { id: parseInt(line.replace(/[^0-9]/g, ""), 10), name: "", desc: "", muted: false };
-                    } else if (cur) {
-                        if (line.startsWith("\tName: "))
-                            cur.name = line.slice(7).trim();
-                        else if (line.startsWith("\tDescription: "))
-                            cur.desc = line.slice(14).trim();
-                        else if (line.startsWith("\tMute: "))
-                            cur.muted = line.slice(7).trim() === "yes";
-                    }
+                for (let line of this.text.trim().split("\n")) {
+                    const f = line.split("|");
+                    if (f.length === 4 && !isNaN(parseInt(f[0], 10)))
+                        next.push({ id: parseInt(f[0], 10), name: f[1], desc: f[2] || f[1], muted: f[3] === "1" });
                 }
-                if (cur) next.push(cur);
-                next = next.filter(s => !isNaN(s.id));
                 // Only replace when the list actually changed, so the
                 // ComboBox model isn't reset on every poll.
                 if (JSON.stringify(next) !== JSON.stringify(root.sinks)) {
@@ -99,7 +94,7 @@ ColumnLayout {
 
     Process {
         id: defaultSinkProc
-        command: ["bash", "-c", "pactl get-default-sink"]
+        command: ["bash", "-c", "wpctl inspect @DEFAULT_AUDIO_SINK@ | awk -F'\"' '/node.name =/{print $2; exit}'"]
         running: root.isOpen && root.fetchTick
 
         stdout: StdioCollector {
@@ -113,7 +108,7 @@ ColumnLayout {
     // Volume of the current default sink (the one selected in the dropdown).
     Process {
         id: sinkVolumeProc
-        command: ["bash", "-c", "pactl get-sink-volume @DEFAULT_SINK@ | grep -o '[0-9]*%' | head -1 | sed 's/%//'"]
+        command: ["bash", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'"]
         running: root.isOpen && root.fetchTick
         stdout: StdioCollector {
             onStreamFinished: {
@@ -124,7 +119,7 @@ ColumnLayout {
         }
     }
 
-    // Give pactl a moment to apply a new default sink before re-reading it,
+    // Give wpctl a moment to apply a new default sink before re-reading it,
     // so the slider jumps to the newly selected device's volume.
     Timer {
         id: refetchAfterSwitch
@@ -184,7 +179,7 @@ ColumnLayout {
                     if (sink) {
                         console.log("Set default sink:", sink.name);
                         Quickshell.execDetached(["bash", "-c",
-                            "pactl set-default-sink '" + sink.name + "'"]);
+                            "wpctl set-default '" + sink.id + "'"]);
                         root.defaultSink = sink.name;
                         refetchAfterSwitch.restart();
                     }
@@ -290,7 +285,7 @@ ColumnLayout {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        Quickshell.execDetached(["bash", "-c", "pactl set-sink-mute @DEFAULT_SINK@ toggle"])
+                        Quickshell.execDetached(["bash", "-c", "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"])
                         root.kickFetch()
                     }
                 }
@@ -304,7 +299,7 @@ ColumnLayout {
                 value: 50
 
                 onMoved: {
-                    Quickshell.execDetached(["bash", "-c", "pactl set-sink-volume @DEFAULT_SINK@ " + Math.round(value) + "%"]);
+                    Quickshell.execDetached(["bash", "-c", "wpctl set-volume @DEFAULT_AUDIO_SINK@ " + Math.round(value) + "%"]);
                 }
 
                 background: Rectangle {

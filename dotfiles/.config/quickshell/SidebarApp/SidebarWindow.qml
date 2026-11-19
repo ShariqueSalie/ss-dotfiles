@@ -27,6 +27,18 @@ PanelWindow {
     property bool systemExpanded: false
     property bool appearanceExpanded: true
 
+    // Browsers register an MPRIS player even when nothing is playing, which
+    // otherwise leaves an empty media card under the Sound section.
+    function playerHasTrack(player): bool {
+        return !!(player && (player.trackTitle || player.isPlaying))
+    }
+    readonly property bool hasActivePlayer: {
+        const players = Mpris.players.values;
+        for (let i = 0; i < players.length; i++)
+            if (playerHasTrack(players[i])) return true;
+        return false;
+    }
+
     anchors {
         right: true
         top: true
@@ -315,7 +327,7 @@ PanelWindow {
                     text: "Settings"
                     onClicked: {
                         root.isOpen = false
-                        // Quickshell.execDetached(["kitty", "--class", "dotfiles-floating", "-e", "ml4w-dotfiles-settings", "com.sali3.dotfiles"])
+                        // Quickshell.execDetached(["kitty", "--class", "dotfiles-floating", "-e", "ml4w-dotfiles-settings", "com.ml4w.dotfiles"])
                         Quickshell.execDetached(["bash", "-c", "qs -p " + Quickshell.env("HOME") + "/.local/share/ml4w-dotfiles-settings/quickshell ipc call settings toggle"])
                     }
                 }
@@ -377,7 +389,7 @@ PanelWindow {
                             clip: true
 
                             model: Mpris.players.values
-                            visible: soundControls.expanded && Mpris.players.values.length > 0
+                            visible: soundControls.expanded && root.hasActivePlayer
 
                             // Force disable scrolling entirely unless there are 3+ players
                             interactive: mprisListView.count > 2
