@@ -1,22 +1,12 @@
-# ML4W OS - Dotfiles for Hyprland
+# S@LI3 OS - Dotfiles for Hyprland
 
-An advanced configuration of Hyprland for Arch Linux based distributions (CachyOS), Fedora, Ubuntu and openSuse Tumbleweed. 
+An advanced configuration of Hyprland for Fedora. 
 
 Full featured desktop environment based on the dynamic tiling window manager Hyprland with adaptive material color themes based on the selected wallpaper for all components. Including a comprehensive selection of apps with the ability to customize the configuration to your personal needs.
 
-<img width="2560" height="1440" alt="image" src="https://ml4w.com/os/screen-217.jpg" />
-
-## Installation
-
-Copy the command for your machine into a terminal. These install **this
-fork** (ss. branding, the dwm-s status bar, the ss. fastfetch banner and
-more). The upstream commands on [ml4w.com/os](https://ml4w.com/os/) install
-`mylinuxforwork/dotfiles` and do **not** include these changes.
-Arch, Fedora, Ubuntu and openSUSE Tumbleweed are directly supported.
-
 ### Desktop install
 
-Graphical desktop (Fedora, Arch, Ubuntu, openSUSE Tumbleweed):
+Graphical desktop (Fedora):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/dotfiles/main/setup/install-desktop.sh | bash
