@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# Apply only the files touched by a dotfiles pull to the live ML4W profile.
+# Called by ml4w-update-center after `git pull --ff-only`.
+#
+# Usage: ml4w-apply-dotfiles <repo> <old-sha> <new-sha>
+
+set -euo pipefail
+
+repo=${1:-}
+old=${2:-}
+new=${3:-}
+
+if [[ -z "$repo" || -z "$old" || -z "$new" || ! -d "$repo" ]]; then
+    echo "Usage: ml4w-apply-dotfiles <repo> <old-sha> <new-sha>" >&2
+    exit 2
+fi
+
+profile="${ML4W_PROFILE_DIR:-$HOME/.mydotfiles/com.sali3.dotfiles}"
+profile_id="${ML4W_PROFILE_ID:-com.sali3.dotfiles}"
+subdir="dotfiles"
+
+if [[ ! -d "$profile" ]]; then
+    echo "Live profile not found: $profile" >&2
+    exit 1
+fi
+
+# Paths the installer treats as user-owned (restored on reinstall): flag them
+# so the user knows a pulled change there will replace a local customization.
+declare -A protected=()
+manifest="$repo/hyprland-dotfiles.dotinst"
+if [[ -f "$manifest" ]] && command -v jq >/dev/null 2>&1; then
+    while IFS= read -r entry; do
+        [[ -n "$entry" ]] && protected["$entry"]=1
+    done < <(jq -r '.restore[]?.source // empty' "$manifest" 2>/dev/null || true)
+fi
+
+changed=()
+removed=()
+while IFS= read -r -d '' path; do
+    changed+=("$path")
+done < <(git -C "$repo" diff --name-only -z --diff-filter=ACMRTUXB "$old" "$new" -- "$subdir")
+while IFS= read -r -d '' path; do
+    removed+=("$path")
+done < <(git -C "$repo" diff --name-only -z --diff-filter=D "$old" "$new" -- "$subdir")
+
+if [[ ${#changed[@]} -eq 0 && ${#removed[@]} -eq 0 ]]; then
+    echo "No live config files changed in this pull (only repo/misc files)."
+    exit 0
+fi
+
+echo "Dotfiles pull changed these live config files:"
+for path in "${changed[@]}"; do
+    rel=${path#"$subdir"/}
+    if [[ -n "${protected[$rel]:-}" ]]; then
+        printf '  ! %s  (local setting - old copy will be backed up)\n' "$rel"
+    else
+        printf '    %s\n' "$rel"
+    fi
+done
+for path in "${removed[@]}"; do
+    rel=${path#"$subdir"/}
+    printf '  - %s  (removed upstream)\n' "$rel"
+done
+echo
+echo "Destination: $profile"
+echo "Any file replaced or removed is backed up first."
+echo
+
+printf 'Apply these changes to your live profile now? [y/N] '
+read -r answer
+case "$answer" in
+    [Yy]*) ;;
+    *)
+        echo "Skipped. Your live profile was not changed."
+        echo "The pull is still in ~/dotfiles; you can apply it later by"
+        echo "copying the listed files (or re-running this helper)."
+        exit 0
+        ;;
+esac
+
+stamp=$(date +%Y%m%d_%H%M%S)
+backup="$HOME/.mydotfiles/backups/profile-updates/$profile_id/${stamp}-dotfiles-pull"
+mkdir -p "$backup"
+applied=0
+
+for path in "${changed[@]}"; do
+    rel=${path#"$subdir"/}
+    dest="$profile/$rel"
+    if [[ -e "$dest" || -L "$dest" ]]; then
+        mkdir -p "$backup/$(dirname "$rel")"
+        cp -a -- "$dest" "$backup/$rel"
+    fi
+    mkdir -p "$(dirname "$dest")"
+    cp -a -- "$repo/$subdir/$rel" "$dest"
+    applied=$((applied + 1))
+done
+
+for path in "${removed[@]}"; do
+    rel=${path#"$subdir"/}
+    dest="$profile/$rel"
+    if [[ -e "$dest" || -L "$dest" ]]; then
+        mkdir -p "$backup/$(dirname "$rel")"
+        cp -a -- "$dest" "$backup/$rel"
+        rm -f -- "$dest"
+        applied=$((applied + 1))
+    fi
+done
+
+echo
+echo "Applied $applied file change(s) to $profile"
+echo "Backup: $backup"
+
+qs ipc call updates refresh >/dev/null 2>&1 || true
+
+echo
+echo "Done. If the change affects the bar or shell, restart Quickshell or reload Hyprland."

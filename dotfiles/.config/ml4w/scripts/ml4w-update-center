@@ -11,6 +11,10 @@
 #   ml4w-update-center snapshot [--force]   print the provider snapshot as JSON
 #   ml4w-update-center update <provider>    run that provider's update in a terminal
 #
+# The dotfiles "Pull" action pulls the clone, then asks interactively whether
+# to copy just the changed config files into the live ML4W profile (backing up
+# the old ones first). See ml4w-apply-dotfiles next to this script.
+#
 # Besides the providers, the Update Center's Fedora maintenance buttons call
 # "update dnf-distro-sync" (sudo dnf distro-sync) and "update
 # dnf-upgrade-refresh" (sudo dnf upgrade --refresh).
@@ -335,9 +339,21 @@ def launch_update(identifier):
         repo = find_repo()
         if repo is None:
             return False
+        helper = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "ml4w-apply-dotfiles"
+        )
+        pull = "git pull --ff-only"
+        if os.path.isfile(helper):
+            # Capture the pre-pull commit so the helper can offer to apply only
+            # the files that this pull actually changed.
+            pull = (
+                "old=$(git rev-parse HEAD) && git pull --ff-only && "
+                "new=$(git rev-parse HEAD) && bash "
+                + shlex.quote(helper) + " " + shlex.quote(repo)
+                + " \"$old\" \"$new\""
+            )
         return run_in_terminal(
-            "cd " + shlex.quote(repo) + " && git pull --ff-only;"
-            " qs ipc call updates refresh >/dev/null 2>&1;"
+            "cd " + shlex.quote(repo) + " && " + pull + ";"
             " echo; read -n 1 -s -r -p 'Press any key to close...'")
 
     # Fedora maintenance buttons shown below the provider rows. dnf prompts
