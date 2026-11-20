@@ -92,6 +92,50 @@ export PATH="$HOME/.local/bin:$PATH"
 command -v ml4w-dotfiles-installer >/dev/null ||
     die "ml4w-dotfiles-installer is not on PATH ($HOME/.local/bin)"
 
+# --- migrate the old profile id to this fork's custom id ----------------
+# The manifest id was rebranded from com.ml4w.dotfiles to the custom
+# com.sali3.dotfiles. The ML4W installer only runs its backup/restore path
+# when the target profile directory already exists. Copy an older install
+# once so a re-run is treated as an update and keeps local customizations.
+migrate_profile_id() {
+    local manifest_json=""
+    if [[ "$MANIFEST_URL" =~ ^https?:// ]]; then
+        if ! manifest_json=$(curl -fsSL --max-time 30 "$MANIFEST_URL"); then
+            warn "could not read $MANIFEST_URL; skipping profile-id migration check"
+            return 0
+        fi
+    elif [ -f "$MANIFEST_URL" ]; then
+        manifest_json=$(cat "$MANIFEST_URL")
+    else
+        warn "manifest not readable ($MANIFEST_URL); skipping profile-id migration check"
+        return 0
+    fi
+
+    local new_id
+    new_id=$(printf '%s\n' "$manifest_json" | jq -r '.id // empty' 2>/dev/null) || new_id=""
+    if [ -z "$new_id" ]; then
+        warn "could not read profile id from manifest; skipping migration check"
+        return 0
+    fi
+
+    local old_id="com.ml4w.dotfiles"
+    [ "$new_id" = "$old_id" ] && return 0
+
+    local old_dir="$HOME/.mydotfiles/$old_id"
+    local new_dir="$HOME/.mydotfiles/$new_id"
+    local old_cfg="$HOME/.config/ml4w-dotfiles-installer/$old_id"
+    local new_cfg="$HOME/.config/ml4w-dotfiles-installer/$new_id"
+
+    if [ -d "$old_dir" ] && [ ! -e "$new_dir" ]; then
+        say "migrating dotfiles profile $old_id -> $new_id"
+        cp -a "$old_dir" "$new_dir"
+    fi
+    if [ -d "$old_cfg" ] && [ ! -e "$new_cfg" ]; then
+        cp -a "$old_cfg" "$new_cfg"
+    fi
+}
+migrate_profile_id
+
 # --- install this fork --------------------------------------------------
 say "installing ShariqueSalie/ss-dotfiles from $MANIFEST_URL"
 

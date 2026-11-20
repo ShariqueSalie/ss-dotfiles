@@ -12,6 +12,12 @@ Graphical desktop (Fedora):
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash
 ```
 
+Re-running the same command is safe. The installer keeps the custom
+`com.sali3.dotfiles` profile id and automatically migrates an older
+`com.ml4w.dotfiles` install once, so your own settings are restored instead of
+being replaced by repo defaults. A backup of the previous profile is written
+under `~/.mydotfiles/backups/` before each update.
+
 ### Default browser
 
 On Fedora the install adds Brave's RPM repository and installs **Brave
