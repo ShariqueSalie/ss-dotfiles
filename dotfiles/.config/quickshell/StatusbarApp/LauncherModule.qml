@@ -1,11 +1,10 @@
 import Quickshell
 import QtQuick
 
-// Opens the application launcher. It wears the dwm-s "S" logo, drawn as the
-// Nerd Font glyph from that desktop's bar instead of an SVG.
+// Opens the application launcher. Uses the Fedora icon from the local assets.
 BarButton {
-    glyph: "󰰣"
-    glyphSize: 23
+    iconSrc: "file://" + Quickshell.env("HOME") + "/.config/ml4w/assets/fedora-logo.png"
+    colorize: false
     onClicked: {
         Quickshell.execDetached(["bash", "-c",
             Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-launcher"])
