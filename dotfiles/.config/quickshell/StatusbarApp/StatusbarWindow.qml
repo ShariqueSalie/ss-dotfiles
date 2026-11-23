@@ -88,7 +88,7 @@ PanelWindow {
         "pill":   { "collapsedWidth": 0, "expandedWidth": 680, "radius": 0,
                     "fullWidth": true, "animationDuration": 350 },
         "modules":{ "left": ["launcher", "workspaces", "clipboard", "terminal"],
-                    "center": ["updates", "swaync", "clock"],
+                    "center": ["updates", "clock", "swaync"],
                     "right": ["battery", "powerprofile", "volume", "systemtray", "logo", "power"] },
         "border": { "width": 2, "colorTop": "", "colorBottom": "" },
         "opacity":{ "collapsed": 0.6, "expanded": 0.8 },
