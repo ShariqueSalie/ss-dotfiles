@@ -32,6 +32,8 @@ qt6-qtvirtualkeyboard
 qt6-qtmultimedia
 gvfs-mtp
 hyprsunset
+# Backend for the status bar's Power Saver / Balanced / Performance menu.
+power-profiles-daemon
 openssl-devel
 pkg-config
 adw-gtk3-theme
