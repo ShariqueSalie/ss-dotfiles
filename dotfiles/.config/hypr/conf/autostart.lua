@@ -59,6 +59,10 @@ hl.on("hyprland.start", function ()
     -- Start hypridle
     hl.exec_cmd("hypridle")
 
+    -- Keep Emote resident so Ctrl+Super+E is instant; a cold flatpak launch
+    -- otherwise takes several seconds before the picker can be activated.
+    hl.exec_cmd("flatpak run com.tomjwatson.Emote")
+
     -- Load cliphist history
     hl.exec_cmd("wl-paste --watch cliphist store")
 
