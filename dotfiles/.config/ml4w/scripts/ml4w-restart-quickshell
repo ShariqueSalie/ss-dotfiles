@@ -33,6 +33,23 @@ warn() { printf 'ml4w-restart-quickshell: %s\n' "$*" >&2; }
 running() { qs -p "$1" ipc show >/dev/null 2>&1; }
 first_word() { printf '%s' "${1%% *}"; }
 
+# The main shell runs as a bare `qs` (no -p argument); dock/overview/switcher/
+# powermenu all pass -p or -n -p. Interrupted restarts can leave extra bare
+# shells behind, which fight over the StatusNotifierWatcher D-Bus name and
+# break the Wi-Fi/Bluetooth tray icons. Track them by pid so cleanup never
+# touches a component instance.
+bare_qs_pids() {
+    local pid cmd uid
+    uid=$(id -u)
+    for pid in $(pgrep -u "$uid" -x qs 2>/dev/null); do
+        cmd=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null) || continue
+        case "$cmd" in
+            *" -p "*|*" -n "*) continue ;;
+        esac
+        printf '%s\n' "$pid"
+    done
+}
+
 # Status bar backend: quickshell (default) or waybar.
 bar_backend() {
     if [ -f "$BAR_SETTING" ]; then
@@ -85,6 +102,14 @@ check_dependencies() {
         && say "notify-send    ok" \
         || say "notify-send    missing (restart does not need it)"
 
+    local shell_count
+    shell_count=$(bare_qs_pids | wc -l)
+    say "main shell     $shell_count instance(s) (expected 1)"
+    if [ "$shell_count" -gt 1 ]; then
+        warn "multiple bare qs instances are running; a restart will clean them up"
+        ok=1
+    fi
+
     return "$ok"
 }
 
@@ -102,15 +127,40 @@ wait_for_main() {
 
 # Stop the running bar/sidebar shell and wait for it to release the sockets.
 stop_main() {
-    qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1 || return 0
-    qs kill -p "$MAIN_DIR" >/dev/null 2>&1 || true
+    local i pids
 
-    local i
-    for i in $(seq 1 50); do
-        qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1 || return 0
-        sleep 0.1
-    done
-    return 1
+    # Ask the tracked instance to exit first so it releases IPC and D-Bus names
+    # cleanly. IPC can be stale when a duplicate shell is already running, so
+    # this is best-effort; the pid sweep below does the actual cleanup.
+    if qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1; then
+        qs kill -p "$MAIN_DIR" >/dev/null 2>&1 || true
+        for i in $(seq 1 50); do
+            qs -p "$MAIN_DIR" ipc show >/dev/null 2>&1 || break
+            sleep 0.1
+        done
+    fi
+
+    # Clear every bare `qs`, including strays `qs kill` could not see. They own
+    # the StatusNotifierWatcher, so leaving duplicates breaks tray icons.
+    pids=$(bare_qs_pids)
+    if [ -n "$pids" ]; then
+        say "stopping main shell processes: $pids"
+        # shellcheck disable=SC2086 # whitespace-separated numeric pids
+        kill $pids 2>/dev/null || true
+        for i in $(seq 1 50); do
+            pids=$(bare_qs_pids)
+            [ -z "$pids" ] && break
+            sleep 0.1
+        done
+        if [ -n "$pids" ]; then
+            warn "force-killing unresponsive main shell: $pids"
+            # shellcheck disable=SC2086
+            kill -9 $pids 2>/dev/null || true
+            sleep 0.2
+        fi
+    fi
+
+    [ -z "$(bare_qs_pids)" ]
 }
 
 start_main() {
