@@ -35,25 +35,6 @@ The install targets Fedora only. `~/.config/ml4w/settings/browser.sh`
 resolves whichever browser is installed, so it also works after swapping the
 default.
 
-### Server install
-
-Headless server (CLI only: bash aliases, prompt, fastfetch banner, btop,
-vim — no Hyprland or quickshell):
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
-```
-
-The server install is the right choice for a machine without a display.
-
-```sh
-# preview without changing anything
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --dry-run
-
-# skip the package installation
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --no-packages
-```
-
 ### Login screen
 
 The desktop install also sets up the dwm-s login screen: LightDM with
