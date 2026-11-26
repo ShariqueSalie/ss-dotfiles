@@ -54,9 +54,11 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("~/.config/hypr/scripts/gtk.sh")
 
     -- Swaync is D-Bus activated by swaync.service (BusName=org.freedesktop.Notifications).
-    -- Starting it here as well made every swaync-client call try to launch a
-    -- second instance, which failed with "An instance is already running" and
-    -- left swaync.service in a failed/start-limit-hit state at login.
+    -- Start it through systemd, not by running the binary directly: a direct
+    -- launch made every swaync-client call try to start a second instance,
+    -- which failed with "An instance is already running" and left the unit in
+    -- a failed/start-limit-hit state at login.
+    hl.exec_cmd("systemctl --user start swaync.service")
 
     -- Start hypridle
     hl.exec_cmd("hypridle")
