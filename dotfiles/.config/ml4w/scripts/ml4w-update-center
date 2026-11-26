@@ -64,7 +64,8 @@ def run(command, timeout, cwd=None):
     env = dict(os.environ, LC_ALL="C", LANG="C")
     try:
         result = subprocess.run(command, capture_output=True, text=True,
-                                timeout=timeout, cwd=cwd, env=env)
+                                stdin=subprocess.DEVNULL, timeout=timeout,
+                                cwd=cwd, env=env)
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return 124, "", "The check timed out"
@@ -106,7 +107,10 @@ def scan_system():
         return provider(identifier, name, icon, "system",
                         "dnf not found", status="unavailable")
 
-    code, out, err = run([shutil.which("dnf"), "-q", "check-update"], 240)
+    # -y accepts pending repo key imports without hanging on a prompt; the
+    # DEVNULL stdin in run() makes any other prompt fail fast instead of
+    # holding the dnf lock for the whole timeout.
+    code, out, err = run([shutil.which("dnf"), "-q", "-y", "check-update"], 240)
     if code not in (0, 100):
         message = (err or out).strip().splitlines()
         return provider(identifier, label, icon, "system", "Could not check for updates",
