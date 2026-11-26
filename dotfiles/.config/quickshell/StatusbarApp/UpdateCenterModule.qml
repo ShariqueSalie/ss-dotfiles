@@ -47,9 +47,9 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 4
 
-        // The Update Center icon from dwm-s, kept as-is so it stays
-        // recognisable. On hover it is tinted dark to stay legible on the
-        // solid accent circle, like the theme-coloured bar icons.
+        // The Update Center icon from dwm-s, tinted with the bar accent like
+        // the other modules. On hover it flips to the background colour so it
+        // stays legible on the solid accent circle.
         Image {
             Layout.alignment: Qt.AlignVCenter
             source: "assets/update-center/dwm-update-center.png"
@@ -61,11 +61,11 @@ Rectangle {
             smooth: true
             layer.enabled: true
             layer.effect: MultiEffect {
-                colorization: updates.active ? 1.0 : 0.0
-                colorizationColor: Theme.background
+                colorization: 1.0
+                colorizationColor: updates.active ? Theme.background : Theme.primary
 
-                Behavior on colorization {
-                    NumberAnimation { duration: 500; easing.type: Easing.OutQuint }
+                Behavior on colorizationColor {
+                    ColorAnimation { duration: 500; easing.type: Easing.OutQuint }
                 }
             }
         }
