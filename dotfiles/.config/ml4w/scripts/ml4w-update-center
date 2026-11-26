@@ -17,7 +17,8 @@
 #
 # Besides the providers, the Update Center's Fedora maintenance buttons call
 # "update dnf-distro-sync" (sudo dnf distro-sync) and "update
-# dnf-upgrade-refresh" (sudo dnf upgrade --refresh).
+# dnf-upgrade-refresh" (sudo dnf upgrade --refresh). "update health-check"
+# opens ml4w-health-check in a terminal with a compact system report.
 #
 # Providers (in display order):
 #
@@ -382,6 +383,15 @@ def launch_update(identifier):
     # has to outlive the shell it replaces, so it runs detached instead of as
     # a child of the card's process. The network restart opens a terminal for
     # sudo, like the dnf buttons.
+    if identifier == "health-check":
+        script = os.path.join(HOME, ".config", "ml4w", "scripts",
+                              "ml4w-health-check")
+        if not os.access(script, os.X_OK):
+            return False
+        return run_in_terminal(
+            "bash " + shlex.quote(script) + ";"
+            " echo; read -n 1 -s -r -p 'Press any key to close...'")
+
     if identifier == "quickshell-restart":
         script = os.path.join(HOME, ".config", "ml4w", "scripts",
                               "ml4w-restart-quickshell")

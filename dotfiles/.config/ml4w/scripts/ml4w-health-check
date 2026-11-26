@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Compact system health check used by the Update Center's "Health Check" button.
+# Safe to run as the normal user; nothing here needs sudo.
+
+line() { printf '%s\n' "------------------------------------------------------------"; }
+
+printf '=== HOST ===\n'
+hostname 2>/dev/null || true
+uptime -p 2>/dev/null || uptime 2>/dev/null || true
+
+line
+printf '=== FAILED UNITS ===\n'
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl --failed --no-pager 2>&1
+    systemctl --user --failed --no-pager 2>&1
+else
+    echo '(systemctl not available)'
+fi
+
+line
+printf '=== KEY DESKTOP SERVICES ===\n'
+if command -v systemctl >/dev/null 2>&1; then
+    for unit in swaync.service xdg-desktop-portal-hyprland.service hyprpolkitagent.service; do
+        printf '%-42s ' "$unit"
+        systemctl --user is-active "$unit" 2>/dev/null || echo inactive
+    done
+else
+    echo '(systemctl not available)'
+fi
+
+line
+printf '=== PACKAGE UPDATES ===\n'
+if command -v dnf >/dev/null 2>&1; then
+    timeout 90 dnf check-update 2>&1 | tail -n 12
+    echo "versionlocked packages: $(dnf versionlock list 2>/dev/null | grep -c 'Package name:')"
+elif command -v apt-get >/dev/null 2>&1; then
+    apt list --upgradable 2>/dev/null | head -n 20
+elif command -v pacman >/dev/null 2>&1; then
+    checkupdates 2>/dev/null | head -n 20 || echo '(checkupdates not installed)'
+else
+    echo '(no supported package manager found)'
+fi
+
+line
+printf '=== PACKAGE MANAGER LOCKS ===\n'
+ps -eo pid,cmd 2>/dev/null | grep -iE 'dnf|yum|packagekit|apt|dpkg|pacman' | grep -v grep || echo '(none)'
+
+line
+printf '=== UPDATE CENTER ===\n'
+uc="$HOME/.config/ml4w/scripts/ml4w-update-center"
+if [ -x "$uc" ]; then
+    timeout 90 "$uc" snapshot --force 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join("%s: %s [%s]" % (p["name"], p["headline"], p["status"]) for p in d.get("providers", [])))' 2>/dev/null || echo '(could not read snapshot)'
+else
+    echo '(update center script not found)'
+fi
+
+line
+printf '=== DISK ===\n'
+df -h / 2>/dev/null | tail -n 1
+
+line
+printf 'Health check complete.\n'

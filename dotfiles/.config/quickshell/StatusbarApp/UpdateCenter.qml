@@ -461,6 +461,19 @@ Item {
                     onClicked: panel.actionRequested("network-restart")
                 }
             }
+
+            // Opens a terminal with a compact report: failed units, key
+            // desktop services, pending updates, lock holders and disk space.
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                MiniButton {
+                    Layout.fillWidth: true
+                    label: "Health Check"
+                    onClicked: panel.actionRequested("health-check")
+                }
+            }
         }
     }
 }
