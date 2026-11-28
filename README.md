@@ -20,14 +20,7 @@ the installer runs non-interactively, pass the flag:
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --enable-fedora-gaming-repos
 ```
 
-```sh
-# skip gaming
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --no-gaming
 
-# or run it separately
-bash setup/install-gaming.sh --dry-run
-bash setup/install-gaming.sh --enable-repos
-```
 
 ## Special Thanks
 
