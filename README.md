@@ -10,6 +10,15 @@ Full featured desktop environment based on the dynamic tiling window manager Hyp
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
 ```
 
+For a headless server with Steam, Gamescope, GameMode and MangoHud, add
+`--gaming`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --gaming
+```
+
+This approves RPM Fusion nonfree (and the COPR on Fedora < 45) automatically.
+
 ### Desktop install
 
 Graphical desktop (Fedora):

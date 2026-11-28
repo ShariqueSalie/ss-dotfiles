@@ -7,10 +7,14 @@
 # logo used by fastfetch. No Hyprland, no quickshell, no GUI.
 #
 #   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash -s -- --gaming
 #
 # Options:
 #   --dry-run        print what would happen, change nothing
 #   --no-packages    skip package installation
+#   --gaming         also install Steam, Gamescope, GameMode and MangoHud.
+#                    This approves RPM Fusion nonfree (and the COPR on
+#                    Fedora < 45) without prompting.
 #   --repo <dir>     install from an existing clone
 #   --ref <branch>   branch to download when not run from a clone (default: main)
 # ------------------------------------------------------------
@@ -20,6 +24,7 @@ REPO_URL="https://github.com/ShariqueSalie/ss-dotfiles.git"
 REF="main"
 DRY_RUN=false
 INSTALL_PACKAGES=true
+INSTALL_GAMING=false
 REPO_DIR=""
 
 usage() {
@@ -28,6 +33,8 @@ usage: install-server.sh [options]
 
   --dry-run        print what would happen, change nothing
   --no-packages    skip package installation
+  --gaming         also install Steam, Gamescope, GameMode and MangoHud
+                   (approves third-party repos without prompting)
   --repo <dir>     install from an existing clone
   --ref <branch>   branch to download when not run from a clone (default: main)
   -h, --help       show this help
@@ -38,6 +45,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run) DRY_RUN=true ;;
         --no-packages) INSTALL_PACKAGES=false ;;
+        --gaming) INSTALL_GAMING=true ;;
         --repo) REPO_DIR="${2:?--repo needs a path}"; shift ;;
         --ref) REF="${2:?--ref needs a branch}"; shift ;;
         -h|--help) usage; exit 0 ;;
@@ -56,6 +64,21 @@ run() {
     else
         "$@"
     fi
+}
+
+# --gaming is explicit consent to enable third-party gaming repositories.
+install_gaming() {
+    $INSTALL_GAMING || return 0
+    local script="$REPO_DIR/setup/install-gaming.sh"
+    [[ -f "$script" ]] || die "gaming installer not found at $script"
+
+    say "installing gaming packages"
+    if $DRY_RUN; then
+        printf '  would run: bash %s --enable-repos\n' "$script"
+        return 0
+    fi
+    bash "$script" --enable-repos ||
+        warn "some gaming packages were unavailable; re-run setup/install-gaming.sh --enable-repos"
 }
 
 # --- packages -----------------------------------------------------------
@@ -92,6 +115,9 @@ if [[ -z "$REPO_DIR" ]]; then
     else
         if $DRY_RUN; then
             say "would download $REPO_URL ($REF) (dry run)"
+            if $INSTALL_GAMING; then
+                printf '  would run: bash <downloaded repo>/setup/install-gaming.sh --enable-repos\n'
+            fi
             say "re-run from a clone or without --dry-run to try it for real"
             exit 0
         fi
@@ -166,6 +192,8 @@ for p in "${PATHS[@]}"; do
     copy_path "$p"
 done
 
+install_gaming
+
 say "done"
 if $DRY_RUN; then
     say "(dry run: nothing was changed)"
@@ -180,5 +208,7 @@ Notes:
     aliases start working.
   * This is the CLI-only install. The Hyprland/quickshell desktop is not
     installed here; use setup/install-desktop.sh on a graphical machine.
+  * --gaming installs Steam, Gamescope, GameMode and MangoHud and approves
+    RPM Fusion nonfree (and the COPR on Fedora < 45) automatically.
   * Existing files were backed up under ~/.dotfiles-backup/.
 EOF
