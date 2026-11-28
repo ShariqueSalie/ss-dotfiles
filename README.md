@@ -3,8 +3,8 @@
 An advanced configuration of Hyprland for Fedora. 
 
 Full featured desktop environment based on the dynamic tiling window manager Hyprland with adaptive material color themes based on the selected wallpaper for all components. Including a comprehensive selection of apps with the ability to customize the configuration to your personal needs.
-Use this for a headless server
 
+### Use this for a headless server:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-server.sh | bash
