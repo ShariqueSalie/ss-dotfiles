@@ -8,55 +8,6 @@ Full featured desktop environment based on the dynamic tiling window manager Hyp
 
 Graphical desktop (Fedora):
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash
-```
-
-Re-running the same command is safe. The installer keeps the custom
-`com.sali3.dotfiles` profile id and automatically migrates an older
-`com.ml4w.dotfiles` install once, so your own settings are restored instead of
-being replaced by repo defaults. A backup of the previous profile is written
-under `~/.mydotfiles/backups/` before each update.
-
-### Default browser
-
-On Fedora the install adds Brave's RPM repository and installs **Brave
-Origin**, then registers it as the default browser for `http`, `https`,
-`about` and `text/html` links. `SUPER+B`, the bar's browser button, the
-quicklinks and links from other apps all open it.
-
-```sh
-# check or change it later
-xdg-settings get default-web-browser
-xdg-settings set default-web-browser brave-origin.desktop
-```
-
-The install targets Fedora only. `~/.config/ml4w/settings/browser.sh`
-resolves whichever browser is installed, so it also works after swapping the
-default.
-
-### Login screen
-
-The desktop install also sets up the dwm-s login screen: LightDM with
-slick-greeter, the Nord wallpaper, a centred login panel and the MesloLGS
-Nerd Font. It defaults to the Hyprland session, disables other display
-managers (GDM, SDDM, ...) and enables `lightdm`.
-
-The wallpaper, greeter config and font files are all kept in
-`setup/lightdm/` (the same folder as dwm-s), so nothing is downloaded at
-login.
-
-```sh
-# keep the existing login screen
-curl -fsSL https://raw.githubusercontent.com/ShariqueSalie/ss-dotfiles/main/setup/install-desktop.sh | bash -s -- --no-greeter
-
-# or run only the greeter later
-bash setup/install-greeter.sh --dry-run
-bash setup/install-greeter.sh
-```
-
-### Fedora gaming
-
 On Fedora x86_64 the desktop install also mirrors the gaming part of
 dwm-s: Steam, Gamescope, GameMode and MangoHud (64- and 32-bit) plus
 GameMode tuning access. It enables RPM Fusion nonfree and, before
